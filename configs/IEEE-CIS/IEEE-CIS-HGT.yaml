@@ -1,0 +1,74 @@
+out_dir: /nobackup/users/junhong/Logs/results
+metric_best: f1
+seed: 42
+wandb:
+  use: True
+  project: H2GB
+dataset:
+  dir: /nobackup/users/junhong/Data
+  format: IEEE-CIS
+  name: IEEE-CIS
+  task: hetero_node
+  task_type: classification
+  task_entity: transaction
+  transductive: True
+  node_encoder: True
+  node_encoder_name: Hetero_Raw
+  node_encoder_bn: False
+  edge_encoder: False
+  edge_encoder_name: none
+  edge_encoder_bn: False
+num_threads: 24
+num_workers: 18
+train:
+  mode: custom
+  sampler: hgt
+  neighbor_sizes: [256, 256, 256, 256] # 256 * 4
+  iter_per_epoch: 256
+  batch_size: 32
+  eval_period: 4
+  ckpt_period: 100
+  tqdm: True
+  persistent_workers: True
+  pin_memory: True
+val:
+  sampler: hgt
+  iter_per_epoch: 256
+  tqdm: True
+model:
+  type: HeteroGNNModel
+  loss_fun: weighted_cross_entropy
+  loss_fun_weight: [1, 1] # Shut off the auto class weight
+  edge_decoding: dot
+  graph_pooling: mean
+gnn:
+  layer_type: HGT
+  layers_mp: 3
+  layers_pre_mp: 0
+  layers_post_mp: 1  # Not used when `gnn.head: san_graph`
+  dim_inner: 64  # `gt.dim_hidden` must match `gnn.dim_inner`
+  batch_norm: False
+  layer_norm: True
+  act: relu
+  input_dropout: 0.0
+  dropout: 0.2
+  agg: mean
+optim:
+  batch_accumulation: 32
+  clip_grad_norm: True
+  optimizer: adamW
+  weight_decay: 1e-5
+  base_lr: 0.001
+  max_epoch: 500
+  scheduler: cosine_with_warmup
+  num_warmup_epochs: 5
+#optim:
+#  clip_grad_norm: True
+#  optimizer: adamW
+#  weight_decay: 1e-5
+#  base_lr: 0.0001
+#  max_epoch: 100
+#  scheduler: reduce_on_plateau
+#  reduce_factor: 0.5
+#  schedule_patience: 5
+#  min_lr: 1e-6

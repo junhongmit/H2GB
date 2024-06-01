@@ -3,7 +3,7 @@ metric_best: accuracy
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: PyG-OAG
@@ -13,7 +13,7 @@ dataset:
   task_entity: paper
   transductive: True
   node_encoder: True
-  node_encoder_name: Hetero_Raw
+  node_encoder_name: Raw
   node_encoder_bn: False
   edge_encoder: False
   edge_encoder_name: none
@@ -42,7 +42,7 @@ model:
   graph_pooling: mean
 gnn:
   layer_type: APPNP
-  K: 3
+  K: 2
   alpha: 0.1
   layers_pre_mp: 2
   layers_post_mp: 1  # Not used when `gnn.head: san_graph`

@@ -98,16 +98,22 @@ class MultiLP(torch.nn.Module):
             edge_weight=None
             adj_t = edge_index
 
-        y = torch.zeros((n, self.out_channels)).to(adj_t.device())
+        binary = False
+        out_channels = self.out_channels
+        if self.out_channels == 1:
+            binary = True
+            # binary
+            out_channels = 2
+        y = torch.zeros((n, out_channels)).to(adj_t.device())
         if label.dim() == 1 or label.shape[1] == 1:
-            # make one hot
-            y[train_idx] = F.one_hot(label[train_idx], self.out_channels).squeeze(1).to(y)
+            # binary or multi-class
+            y[train_idx] = F.one_hot(label[train_idx], out_channels).to(y) # .squeeze(1)
         elif self.mult_bin:
-            y = torch.zeros((n, 2*self.out_channels)).to(adj_t.device())
+            y = torch.zeros((n, 2*out_channels)).to(adj_t.device())
             for task in range(label.shape[1]):
                 y[train_idx, 2*task:2*task+2] = F.one_hot(label[train_idx, task], 2).to(y)
         else:
-            y[train_idx] = label[train_idx].to(y.dtype)
+            y[train_idx] = label[train_idx].to(y)
         result = y.clone()
         for _ in range(self.num_iters):
             for _ in range(self.hops):
@@ -116,16 +122,25 @@ class MultiLP(torch.nn.Module):
             result += (1-self.alpha)*y
 
         if self.mult_bin:
-            output = torch.zeros((n, self.out_channels)).to(result.device)
+            output = torch.zeros((n, out_channels)).to(result)
             for task in range(label.shape[1]):
                 output[:, task] = result[:, 2*task+1]
             result = output
 
+        if binary:
+            result = result.max(dim=1)[1].float()
         mask = f'{batch.split}_mask'
         if isinstance(batch, HeteroData):
             result = result[node_type_tensor == node_idx]
             label = label[node_type_tensor == node_idx]
             task = cfg.dataset.task_entity
-            return result[batch[task][mask]], label[batch[task][mask]]
+            if hasattr(batch[task], 'batch_size'):
+                batch_size = batch[task].batch_size
+                return result[:batch_size], \
+                    label[:batch_size]
+            else:
+                mask = f'{batch.split}_mask'
+                return result[batch[task][mask]], \
+                    label[batch[task][mask]]
         else:
             return result[batch[mask]], label[batch[mask]]

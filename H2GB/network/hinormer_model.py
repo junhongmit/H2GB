@@ -1,3 +1,4 @@
+from pickle import FALSE
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -65,7 +66,7 @@ from torch.nn import init
 
 class REConv(MessagePassing):
     def __init__(self, in_channels, out_channels, num_type=4, norm='both', bias=True, activation=None):
-        super(REConv, self).__init__(aggr='add')  # 'add' corresponds to summing messages.
+        super(REConv, self).__init__(aggr='add')
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.num_type = num_type
@@ -132,13 +133,11 @@ class REConv(MessagePassing):
         # x_j denotes the features of source nodes j, which are being aggregated at the destination nodes.
         return x_j
 
-    def update(self, aggr_out):
-        # aggr_out is the result of aggregation, which is the sum of the messages in this case.
-        return aggr_out
-
 
 class AGTLayer(nn.Module):
-    def __init__(self, embeddings_dimension, nheads=2, att_dropout=0.5, emb_dropout=0.5, temper=1.0, rl=False, rl_dim=4, beta = 1):
+    def __init__(self, embeddings_dimension, 
+                 nheads=2, att_dropout=0.5, emb_dropout=0.5, 
+                 temper=1.0, rl=False, rl_dim=4, beta=1):
 
         super(AGTLayer, self).__init__()
 
@@ -223,7 +222,10 @@ class HINormer(nn.Module):
         # self.encoder = FeatureEncoder(dim_in, data)
         # dim_in = self.encoder.dim_in
 
-        self.fc_list = nn.ModuleList([nn.Linear(in_dim, self.embeddings_dimension) for in_dim in dim_in.values()])
+        self.fc_list = nn.ModuleList([
+            nn.Linear(in_dim, self.embeddings_dimension)
+            for in_dim in dim_in.values()
+        ])
 
         self.dropout = cfg.gnn.dropout
         self.GCNLayers = nn.ModuleList([
@@ -241,10 +243,14 @@ class HINormer(nn.Module):
         self.drop = nn.Dropout(self.dropout)
 
         self.prediction = nn.Linear(self.embeddings_dimension, dim_out)
+        # self.prediction = nn.Linear(dim_in['paper'], dim_out)
+        # self.lin1 = nn.Linear(dim_in['paper'], 128)
+        # self.lin2 = nn.Linear(128, dim_out)
 
     def forward(self, batch, norm=False):
         # batch = self.encoder(batch)
         x, label, seqs = batch
+        ego_nodes = seqs[:, 0]
 
         # homo = batch.to_homogeneous()
         # x, edge_index = homo.x, homo.edge_index
@@ -252,23 +258,23 @@ class HINormer(nn.Module):
         node_type_tensor = self.node_type
 
         h = []
-        for idx, fc in enumerate(self.fc_list):
+        for idx in range(len(self.fc_list)):
             mask = node_type_tensor==idx
-            h.append(fc(x[mask]))
+            h.append(self.fc_list[idx](x[mask]))
 
         gh = torch.cat(h, dim=0)
         r = self.type_emb[node_type_tensor]
 
+
         for layer in range(self.num_gnns):
             gh = F.relu(self.GCNLayers[layer](gh, edge_index))
             gh = self.drop(gh)
-            # Adapt the RELayer forward method to accept PyG data format
             r = F.relu(self.RELayers[layer](r, edge_index, node_type_tensor))
 
         h = gh[seqs]
-        r = r[seqs]
-        for layer in range(self.num_layers):
-            h = self.GTLayers[layer](h, rh=r)
+        # r = r[seqs]
+        # for layer in range(self.num_layers):
+        #     h = self.GTLayers[layer](h, rh=r)
 
         # Write back
         # if isinstance(batch, HeteroData):
@@ -283,4 +289,4 @@ class HINormer(nn.Module):
         output = self.prediction(h[:, 0, :])
         if norm:
             output = output / (torch.norm(output, dim=1, keepdim=True) + 1e-12)
-        return output, label[seqs[:, 0]]
+        return output, label[ego_nodes]

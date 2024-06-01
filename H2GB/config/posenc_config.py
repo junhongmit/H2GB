@@ -11,6 +11,7 @@ def set_cfg_posenc(cfg):
     cfg.posenc_LapPE = CN()
     cfg.posenc_SignNet = CN()
     cfg.posenc_RWSE = CN()
+    cfg.posenc_Homo_GNN = CN()
     cfg.posenc_Hetero_RWSE = CN()
     cfg.posenc_Hetero_Label = CN()
     cfg.posenc_Hetero_Metapath = CN()
@@ -25,7 +26,7 @@ def set_cfg_posenc(cfg):
 
     # Common arguments to all PE types.
     for name in ['posenc_LapPE', 'posenc_SignNet', 'posenc_RWSE', 'posenc_Hetero_RWSE',
-                 'posenc_Hetero_Label',
+                 'posenc_Homo_GNN', 'posenc_Hetero_Label',
                  'posenc_Hetero_Metapath', 'posenc_Hetero_Node2Vec', 'posenc_Hetero_TransE',
                  'posenc_Hetero_ComplEx', 'posenc_Hetero_DistMult', 'posenc_Hetero_GNN',
                  'posenc_HKdiagSE', 'posenc_ElstaticSE']:
@@ -120,6 +121,15 @@ def set_cfg_posenc(cfg):
     cfg.posenc_Hetero_SDPE.enable = False
     cfg.posenc_Hetero_SDPE.num_spatial_types = 0
     cfg.posenc_Hetero_SDPE.dim_pe = 0
+
+    cfg.posenc_Homo_GNN.pre_layers = 0
+    cfg.posenc_Homo_GNN.batch_norm = False
+    cfg.posenc_Homo_GNN.layer_norm = False
+    cfg.posenc_Homo_GNN.input_dropout = 0.0
+    cfg.posenc_Homo_GNN.attn_dropout = 0.0
+    cfg.posenc_Homo_GNN.dropout = 0.0
+    cfg.posenc_Homo_GNN.act = 'relu'
+    cfg.posenc_Homo_GNN.agg = 'mean'
 
     cfg.posenc_Hetero_GNN.pre_layers = 0
     cfg.posenc_Hetero_GNN.batch_norm = False

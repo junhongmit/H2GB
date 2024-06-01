@@ -1,0 +1,61 @@
+out_dir: /nobackup/users/junhong/Logs/results
+metric_best: accuracy
+seed: 42
+device: cpu
+wandb:
+  use: True
+  project: unifiedGT
+dataset:
+  dir: /nobackup/users/junhong/Data
+  format: PyG-Pokec
+  name: Pokec
+  task: hetero_node
+  task_type: classification
+  task_entity: user
+  transductive: True
+  node_encoder: True
+  node_encoder_name: Raw
+  node_encoder_bn: False
+  edge_encoder: False
+  edge_encoder_name: none
+  edge_encoder_bn: False
+  rand_split: True
+num_threads: 24
+num_workers: 18
+train:
+  mode: custom
+  sampler: full_batch
+  tqdm: True
+  persistent_workers: True
+  pin_memory: True
+val:
+  sampler: full_batch
+  iter_per_epoch: 256
+  tqdm: True
+model:
+  type: SGCModel
+  loss_fun: cross_entropy
+  edge_decoding: dot
+  graph_pooling: mean
+gnn:
+  alpha: 0.1
+  hops: 2
+  dim_inner: 256
+optim:
+  clip_grad_norm: True
+  optimizer: adamW
+  weight_decay: 1e-5
+  base_lr: 0.001
+  max_epoch: 500
+  scheduler: cosine_with_warmup
+  num_warmup_epochs: 5
+#optim:
+#  clip_grad_norm: True
+#  optimizer: adamW
+#  weight_decay: 1e-5
+#  base_lr: 0.0001
+#  max_epoch: 100
+#  scheduler: reduce_on_plateau
+#  reduce_factor: 0.5
+#  schedule_patience: 5
+#  min_lr: 1e-6

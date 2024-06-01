@@ -12,6 +12,7 @@ from torch_geometric.data import (
 )
 
 from ogb.nodeproppred import PygNodePropPredDataset
+from torch_geometric.utils import index_to_mask, to_undirected
 
 
 class MAGDataset(InMemoryDataset):
@@ -82,9 +83,9 @@ class MAGDataset(InMemoryDataset):
         train_paper = split_idx['train']['paper']
         valid_paper = split_idx['valid']['paper']
         test_paper  = split_idx['test']['paper']
-        hetero_data['paper'].train_mask = torch_geometric.utils.index_to_mask(train_paper, size=data.y_dict['paper'].shape[0])
-        hetero_data['paper'].val_mask = torch_geometric.utils.index_to_mask(valid_paper, size=data.y_dict['paper'].shape[0])
-        hetero_data['paper'].test_mask = torch_geometric.utils.index_to_mask(test_paper, size=data.y_dict['paper'].shape[0])
+        hetero_data['paper'].train_mask = index_to_mask(train_paper, size=data.y_dict['paper'].shape[0])
+        hetero_data['paper'].val_mask = index_to_mask(valid_paper, size=data.y_dict['paper'].shape[0])
+        hetero_data['paper'].test_mask = index_to_mask(test_paper, size=data.y_dict['paper'].shape[0])
         for node_type in data.num_nodes_dict:
             if node_type in ['paper', 'institution']:
                 continue

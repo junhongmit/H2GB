@@ -36,6 +36,8 @@ cfg_dir="configs"
 DATASET="oag-chem"
 # run_repeats ${DATASET} MLP                "name_tag MLP"
 # run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
+# run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"
+# run_repeats ${DATASET} LP+2Hop            "name_tag LP+2Hop"
 
 # Homogeneous GNN Baselines
 # run_repeats ${DATASET} GCN                "name_tag GCN"
@@ -44,6 +46,9 @@ DATASET="oag-chem"
 # run_repeats ${DATASET} GAT                "name_tag GAT"
 # run_repeats ${DATASET} APPNP                "name_tag APPNP"
 # run_repeats ${DATASET} NAGphormer         "name_tag NAGphormer"
+# run_repeats ${DATASET} GraphTrans         "name_tag GraphTrans"
+# run_repeats ${DATASET} Gophormer          "name_tag Gophormer"
+# run_repeats ${DATASET} GOAT               "name_tag GOAT"
 
 # Heterogeneous GNN Baselines
 # run_repeats ${DATASET} RGCN               "name_tag RGCN"
@@ -54,6 +59,7 @@ DATASET="oag-chem"
 # run_repeats ${DATASET} MixHop               "name_tag MixHop"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+# run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
 
 # Proposed GT
 # run_repeats ${DATASET} SparseEdgeGT         "name_tag SparseEdgeGT"
@@ -74,6 +80,7 @@ DATASET="oag-chem"
 DATASET="oag-cs"
 # run_repeats ${DATASET} MLP                "name_tag MLP"
 # run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
+# run_repeats ${DATASET} MLP+Node2Vec         "name_tag MLP+Node2Vec"
 # run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"
 # run_repeats ${DATASET} LP+2Hop            "name_tag LP+2Hop"
 
@@ -82,17 +89,23 @@ DATASET="oag-cs"
 # run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
 # run_repeats ${DATASET} GIN                "name_tag GIN"
 # run_repeats ${DATASET} GAT                "name_tag GAT"
+# run_repeats ${DATASET} APPNP              "name_tag APPNP"
 # run_repeats ${DATASET} NAGphormer         "name_tag NAGphormer"
+# run_repeats ${DATASET} GraphTrans         "name_tag GraphTrans"
+# run_repeats ${DATASET} Gophormer          "name_tag Gophormer"
+# run_repeats ${DATASET} GOAT               "name_tag GOAT"
 
 # Heterogeneous GNN Baselines
 # run_repeats ${DATASET} RGCN               "name_tag RGCN"
 # run_repeats ${DATASET} HAN                "name_tag HAN"
 # run_repeats ${DATASET} HGT                "name_tag HGT"
+# run_repeats ${DATASET} SHGN               "name_tag SHGN"
 
 # Heterophilic GNN Baselines
 # run_repeats ${DATASET} MixHop               "name_tag MixHop"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+# run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
 
 # Proposed GT
 # run_repeats ${DATASET} FullEdgeGT       "name_tag FullEdgeGT wandb.use False"
@@ -104,6 +117,8 @@ DATASET="oag-cs"
 # run_repeats ${DATASET} SparseEdgeGT                 "name_tag SparseEdgeGT train.auto_resume True"
 # run_repeats ${DATASET} SparseEdgeGT+Metapath        "name_tag SparseEdgeGT+Metapath"
 # run_repeats ${DATASET} SparseNodeGT                 "name_tag SparseNodeGT"
+# run_repeats ${DATASET} SparseNodeGT                 "name_tag SparseNodeGT+PAP_relation"
+# run_repeats ${DATASET} SparseNodeGT_edgeType       "name_tag SparseNodeGT_edgeType"
 # run_repeats ${DATASET} SparseNodeGT+2Hop                 "name_tag SparseNodeGT+2Hop"
 # run_repeats ${DATASET} SparseNodeGT+GlobalNodes                 "name_tag SparseNodeGT+GlobalNodes"
 # run_repeats ${DATASET} SparseNodeGT+2Hop+GlobalNodes                 "name_tag SparseNodeGT+2Hop+GlobalNodes"
@@ -111,10 +126,10 @@ DATASET="oag-cs"
 # run_repeats ${DATASET} SparseNodeGT_Test                 "name_tag SparseNodeGT_Test"
 # run_repeats ${DATASET} SparseNodeGT+Metapath                 "name_tag SparseNodeGT+Metapath"
 # run_repeats ${DATASET} SparseNodeGT+LP                 "name_tag SparseNodeGT+LP"
+# run_repeats ${DATASET} SparseNodeGT+Node2Vec+LP                 "name_tag SparseNodeGT+Node2Vec+LP"
 # run_repeats ${DATASET} GCN+SparseEdgeGT             "name_tag GCN+SparseEdgeGT"
 # run_repeats ${DATASET} GCN+SparseEdgeGT+Metapath             "name_tag GCN+SparseEdgeGT+Metapath"
-# run_repeats ${DATASET} GCN+GT             "name_tag GCN+GT+TypeFFN"
-# run_repeats ${DATASET} SAGE+GT            "name_tag SAGE+GT+TypeFFN"
+# run_repeats ${DATASET} SAGE+SparseNodeGT                 "name_tag SAGE+SparseNodeGT"
 # run_repeats ${DATASET} SAGE+FullGT        "name_tag SAGE+FullGT+TypeFFN"
 # run_repeats ${DATASET} SAGE-SAGE+GT       "name_tag SAGE-SAGE+GT+TypeFFN"
 
@@ -167,6 +182,9 @@ DATASET="oag-eng"
 # run_repeats ${DATASET} GIN                "name_tag GIN"
 # run_repeats ${DATASET} GAT                "name_tag GAT"
 # run_repeats ${DATASET} NAGphormer         "name_tag NAGphormer"
+# run_repeats ${DATASET} GraphTrans         "name_tag GraphTrans"
+# run_repeats ${DATASET} Gophormer          "name_tag Gophormer"
+# run_repeats ${DATASET} GOAT               "name_tag GOAT"
 
 # Heterogeneous GNN Baselines
 # run_repeats ${DATASET} RGCN               "name_tag RGCN"
@@ -180,6 +198,7 @@ DATASET="oag-eng"
 # run_repeats ${DATASET} MixHop               "name_tag MixHop"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+# run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
 
 # Proposed GT
 # run_repeats ${DATASET} FullEdgeGT       "name_tag FullEdgeGT wandb.use False"
@@ -202,6 +221,7 @@ DATASET="oag-eng"
 
 DATASET="ogbn-mag"
 # run_repeats ${DATASET} MLP                "name_tag MLP"
+# run_repeats ${DATASET} MLP+Node2Vec       "name_tag MLP+Node2Vec"
 # run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
 # run_repeats ${DATASET} MLP+TransE         "name_tag MLP+TransE"
 # run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"
@@ -211,12 +231,15 @@ DATASET="ogbn-mag"
 
 # Homogeneous GNN Baselines
 # run_repeats ${DATASET} GCN                "name_tag GCN"
-# run_repeats ${DATASET} GCN+MS                "name_tag GCN+MS"
-# run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
+# run_repeats ${DATASET} GCN+MS             "name_tag GCN+MS"
+# run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE seed 45"
 # run_repeats ${DATASET} GIN                "name_tag GIN"
 # run_repeats ${DATASET} GAT                "name_tag GAT"
 # run_repeats ${DATASET} APPNP                "name_tag APPNP"
 # run_repeats ${DATASET} NAGphormer         "name_tag NAGphormer"
+# run_repeats ${DATASET} GraphTrans         "name_tag GraphTrans"
+# run_repeats ${DATASET} Gophormer          "name_tag Gophormer"
+# run_repeats ${DATASET} GOAT               "name_tag GOAT"
 
 # Heterogeneous GNN Baselines
 # run_repeats ${DATASET} RGCN               "name_tag RGCN"
@@ -226,12 +249,15 @@ DATASET="ogbn-mag"
 # run_repeats ${DATASET} HGT+CL             "name_tag HGT+CL"
 # run_repeats ${DATASET} HGT256             "name_tag HGT256"
 # run_repeats ${DATASET} HGT_eval           "name_tag HGT_eval"
-run_repeats ${DATASET} HINormer           "name_tag HINormer wandb.use False"
+# run_repeats ${DATASET} HINormer           "name_tag HINormer wandb.use False" # wandb.use False
+# run_repeats ${DATASET} SHGN               "name_tag SHGN"
 
 # Heterophilic GNN Baselines
 # run_repeats ${DATASET} MixHop               "name_tag MixHop"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+# run_repeats ${DATASET} ACM-GCN             "name_tag ACM-GCN" # wandb.use False
+# run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
 
 # Proposed GT
 # run_repeats ${DATASET} FullEdgeGT         "name_tag FullEdgeGT seed 43"
@@ -259,9 +285,12 @@ run_repeats ${DATASET} HINormer           "name_tag HINormer wandb.use False"
 # run_repeats ${DATASET} SparseEdgeGT+TransE          "name_tag SparseEdgeGT+TransE"
 # run_repeats ${DATASET} SparseEdgeGT+Metapath+GlobalNodes       "name_tag SparseEdgeGT+Metapath+GlobalNodes"
 # run_repeats ${DATASET} SparseEdgeGT+Metapath_eval       "name_tag SparseEdgeGT+Metapath_eval"
-# run_repeats ${DATASET} SparseNodeGT       "name_tag SparseNodeGT"
+# run_repeats ${DATASET} SparseNodeGT       "name_tag SparseNodeGT+layer3+512*3 train.auto_resume True"
+# run_repeats ${DATASET} SparseNodeGT_fast       "name_tag SparseNodeGT_fast"
+# run_repeats ${DATASET} SparseNodeGT_edgeType_fast       "name_tag SparseNodeGT_edgeType_fast"
 # run_repeats ${DATASET} SparseNodeGT+2Hop       "name_tag SparseNodeGT+2Hop"
 # run_repeats ${DATASET} SparseNodeGT+Metapath       "name_tag SparseNodeGT+Metapath seed 43"
+# run_repeats ${DATASET} SparseNodeGT+Metapath+LP       "name_tag SparseNodeGT+Metapath+LP"
 # run_repeats ${DATASET} GCN+SparseEdgeGT       "name_tag GCN+SparseEdgeGT seed 43"
 # run_repeats ${DATASET} GCN+SparseEdgeGT+Metapath       "name_tag GCN+SparseEdgeGT+Metapath seed 43"
 # run_repeats ${DATASET} GCN+SparseEdgeGT+Metapath+LP       "name_tag GCN+SparseEdgeGT+Metapath+LP"
@@ -311,6 +340,9 @@ DATASET="mag-year"
 # run_repeats ${DATASET} GAT                "name_tag GAT"
 # run_repeats ${DATASET} APPNP              "name_tag APPNP"
 # run_repeats ${DATASET} NAGphormer         "name_tag NAGphormer"
+# run_repeats ${DATASET} GraphTrans         "name_tag GraphTrans train.auto_resume True"
+# run_repeats ${DATASET} Gophormer          "name_tag Gophormer"
+# run_repeats ${DATASET} GOAT               "name_tag GOAT"
 
 # Heterogeneous GNN Baselines
 # run_repeats ${DATASET} RGCN               "name_tag RGCN"
@@ -324,12 +356,13 @@ DATASET="mag-year"
 # run_repeats ${DATASET} HGT256             "name_tag HGT256"
 # run_repeats ${DATASET} HGT_eval           "name_tag HGT_eval"
 # run_repeats ${DATASET} HINormer           "name_tag HINormer wandb.use False"
-# run_repeats ${DATASET} SHGN               "name_tag SHGN"
+# run_repeats ${DATASET} SHGN               "name_tag SHGN seed 44 train.auto_resume True"
 
 # Heterophilic GNN Baselines
 # run_repeats ${DATASET} MixHop               "name_tag MixHop"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+# run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
 
 # Proposed GT
 # run_repeats ${DATASET} SparseNodeGT       "name_tag SparseNodeGT"
@@ -350,7 +383,12 @@ DATASET="mag-year"
 DATASET="RCDD"
 # run_repeats ${DATASET} MLP                "name_tag MLP"
 # run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
+# run_repeats ${DATASET} MLP+Node2Vec         "name_tag MLP+Node2Vec"
 # run_repeats ${DATASET} MLP+TransE         "name_tag MLP+TransE"
+# run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"
+# run_repeats ${DATASET} LP+2Hop            "name_tag LP+2Hop"
+# run_repeats ${DATASET} SGC+1Hop           "name_tag SGC+1Hop"
+run_repeats ${DATASET} SGC+2Hop           "name_tag SGC+2Hop seed 46"
 
 # Homogeneous GNN Baselines
 # run_repeats ${DATASET} GCN                "name_tag GCN"
@@ -358,7 +396,11 @@ DATASET="RCDD"
 # run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
 # run_repeats ${DATASET} GIN                "name_tag GIN"
 # run_repeats ${DATASET} GAT                "name_tag GAT"
+# run_repeats ${DATASET} APPNP              "name_tag APPNP"
 # run_repeats ${DATASET} NAGphormer         "name_tag NAGphormer"
+# run_repeats ${DATASET} GraphTrans         "name_tag GraphTrans"
+# run_repeats ${DATASET} Gophormer          "name_tag Gophormer"
+# run_repeats ${DATASET} GOAT               "name_tag GOAT"
 
 # Heterogeneous GNN Baselines
 # run_repeats ${DATASET} RGCN               "name_tag RGCN"
@@ -370,14 +412,19 @@ DATASET="RCDD"
 # run_repeats ${DATASET} HGT256             "name_tag HGT256"
 # run_repeats ${DATASET} HGT_eval           "name_tag HGT_eval"
 # run_repeats ${DATASET} HINormer           "name_tag HINormer wandb.use False"
+# run_repeats ${DATASET} SHGN               "name_tag SHGN"
 
 # Heterophilic GNN Baselines
 # run_repeats ${DATASET} MixHop               "name_tag MixHop"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
+# run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+# run_repeats ${DATASET} ACM-GCN             "name_tag ACM-GCN"
+# run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
 
 # Proposed GT
 # run_repeats ${DATASET} SparseNodeGT       "name_tag SparseNodeGT"
-# run_repeats ${DATASET} SparseNodeGT_Test       "name_tag SparseNodeGT_Test"
+# run_repeats ${DATASET} SparseNodeGT+LP       "name_tag SparseNodeGT+LP"
+# run_repeats ${DATASET} SparseNodeGT+Metapath+LP       "name_tag SparseNodeGT+Metapath+LP"
 # run_repeats ${DATASET} GCN+SparseNodeGT        "name_tag GCN+SparseNodeGT"
 # run_repeats ${DATASET} GCN+SparseNodeGT+LP         "name_tag GCN+SparseNodeGT+LP"
 # run_repeats ${DATASET} SparseEdgeGT       "name_tag SparseEdgeGT"
@@ -411,6 +458,10 @@ DATASET="IEEE-CIS"
 # run_repeats ${DATASET} MLP                "name_tag MLP"
 # run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
 # run_repeats ${DATASET} MLP+TransE         "name_tag MLP+TransE"
+# run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"
+# run_repeats ${DATASET} LP+2Hop            "name_tag LP+2Hop"
+# run_repeats ${DATASET} SGC+1Hop           "name_tag SGC+1Hop"
+# run_repeats ${DATASET} SGC+2Hop           "name_tag SGC+2Hop"
 
 # Homogeneous GNN Baselines
 # run_repeats ${DATASET} GCN                "name_tag GCN"
@@ -418,7 +469,11 @@ DATASET="IEEE-CIS"
 # run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
 # run_repeats ${DATASET} GIN                "name_tag GIN"
 # run_repeats ${DATASET} GAT                "name_tag GAT"
+# run_repeats ${DATASET} APPNP              "name_tag APPNP"
 # run_repeats ${DATASET} NAGphormer         "name_tag NAGphormer"
+# run_repeats ${DATASET} GraphTrans         "name_tag GraphTrans"
+# run_repeats ${DATASET} Gophormer          "name_tag Gophormer"
+# run_repeats ${DATASET} GOAT               "name_tag GOAT"
 
 # Heterogeneous GNN Baselines
 # run_repeats ${DATASET} RGCN               "name_tag RGCN"
@@ -429,11 +484,96 @@ DATASET="IEEE-CIS"
 # run_repeats ${DATASET} HGT                "name_tag HGT"
 # run_repeats ${DATASET} HGT_eval           "name_tag HGT_eval"
 
+# Heterophilic GNN Baselines
+# run_repeats ${DATASET} MixHop              "name_tag MixHop"
+# run_repeats ${DATASET} LINKX               "name_tag LINKX"
+# run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+# run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+
 # Proposed GT
 # run_repeats ${DATASET} SparseNodeGT               "name_tag SparseNodeGT"
+# run_repeats ${DATASET} SparseNodeGT+LP             "name_tag SparseNodeGT+LP"
+# run_repeats ${DATASET} SparseNodeGT+Metapath+LP             "name_tag SparseNodeGT+Metapath+LP"
+# run_repeats ${DATASET} SparseNodeGT+Node2Vec+LP     "name_tag SparseNodeGT+Node2Vec+LP"
 # run_repeats ${DATASET} SparseEdgeGT               "name_tag SparseEdgeGT"
 # run_repeats ${DATASET} SparseEdgeGT_Test               "name_tag SparseEdgeGT_Test"
 # run_repeats ${DATASET} SparseEdgeGT+2Hop      "name_tag SparseEdgeGT+2Hop"
 # run_repeats ${DATASET} GCN+SparseEdgeGT           "name_tag GCN+SparseEdgeGT"
 # run_repeats ${DATASET} SparseEdgeGT+LP               "name_tag SparseEdgeGT+LP"
 # run_repeats ${DATASET} GCN+SparseEdgeGT+LP           "name_tag GCN+SparseEdgeGT+LP"
+
+
+DATASET="Pokec"
+# run_repeats ${DATASET} MLP                "name_tag MLP"
+# run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
+# run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"
+# run_repeats ${DATASET} LP+2Hop            "name_tag LP+2Hop"
+# run_repeats ${DATASET} SGC+1Hop           "name_tag SGC+1Hop"
+# run_repeats ${DATASET} SGC+2Hop           "name_tag SGC+2Hop"
+
+# Homogeneous GNN Baselines
+# run_repeats ${DATASET} GCN                "name_tag GCN"
+# run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
+# run_repeats ${DATASET} GAT                "name_tag GAT"
+# run_repeats ${DATASET} GIN                "name_tag GIN"
+# run_repeats ${DATASET} APPNP              "name_tag APPNP"
+# run_repeats ${DATASET} NAGphormer         "name_tag NAGphormer"
+# run_repeats ${DATASET} GraphTrans         "name_tag GraphTrans train.auto_resume True"
+# run_repeats ${DATASET} Gophormer          "name_tag Gophormer"
+# run_repeats ${DATASET} GOAT               "name_tag GOAT"
+
+# Heterogeneous GNN Baselines
+# run_repeats ${DATASET} RGCN               "name_tag RGCN_nonuniform_sampling"
+# run_repeats ${DATASET} RGraphSAGE         "name_tag RGraphSAGE_nonuniform_sampling"
+
+# Heterophilic GNN Baselines
+# run_repeats ${DATASET} MixHop               "name_tag MixHop"
+# run_repeats ${DATASET} LINKX               "name_tag LINKX"
+# run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+
+# Proposed GT
+# run_repeats ${DATASET} SparseNodeGT               "name_tag SparseNodeGT_Hetero"
+# run_repeats ${DATASET} SparseNodeGT+LP             "name_tag SparseNodeGT_Hetero+LP_nonuniform_sampling"
+# run_repeats ${DATASET} SparseNodeGT+Node2Vec+LP             "name_tag SparseNodeGT+Node2Vec+LP"
+# run_repeats ${DATASET} SparseNodeGT+Metapath+LP             "name_tag SparseNodeGT+Metapath+LP"
+
+
+DATASET="DNS"
+# run_repeats ${DATASET} MLP                "name_tag MLP"
+# run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
+# run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"
+# run_repeats ${DATASET} LP+2Hop            "name_tag LP+2Hop"
+# run_repeats ${DATASET} SGC+1Hop           "name_tag SGC+1Hop"
+# run_repeats ${DATASET} SGC+2Hop           "name_tag SGC+2Hop"
+
+# Homogeneous GNN Baselines
+# run_repeats ${DATASET} GCN                "name_tag GCN"
+# run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
+# run_repeats ${DATASET} GAT                "name_tag GAT"
+# run_repeats ${DATASET} GIN                "name_tag GIN"
+# run_repeats ${DATASET} APPNP              "name_tag APPNP"
+# run_repeats ${DATASET} NAGphormer         "name_tag NAGphormer"
+# run_repeats ${DATASET} GraphTrans         "name_tag GraphTrans"
+# run_repeats ${DATASET} Gophormer          "name_tag Gophormer"
+# run_repeats ${DATASET} GOAT               "name_tag GOAT"
+
+# Heterogeneous GNN Baselines
+# run_repeats ${DATASET} RGCN               "name_tag RGCN"
+# run_repeats ${DATASET} RGraphSAGE         "name_tag RGraphSAGE"
+# run_repeats ${DATASET} RGAT               "name_tag RGAT"
+# run_repeats ${DATASET} HAN                "name_tag HAN"
+# run_repeats ${DATASET} HGT                "name_tag HGT"
+# run_repeats ${DATASET} HINormer           "name_tag HINormer wandb.use False"
+# run_repeats ${DATASET} SHGN               "name_tag SHGN"
+
+# Heterophilic GNN Baselines
+# run_repeats ${DATASET} MixHop               "name_tag MixHop"
+# run_repeats ${DATASET} LINKX               "name_tag LINKX"
+# run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+# run_repeats ${DATASET} ACM-GCN             "name_tag ACM-GCN"
+# run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+
+# Proposed GT
+# run_repeats ${DATASET} SparseNodeGT               "name_tag SparseNodeGT"
+# run_repeats ${DATASET} SparseNodeGT+LP             "name_tag SparseNodeGT+LP"
+# run_repeats ${DATASET} SparseNodeGT+Metapath+LP             "name_tag SparseNodeGT+Metapath+LP"

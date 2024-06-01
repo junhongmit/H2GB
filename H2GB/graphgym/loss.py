@@ -39,23 +39,24 @@ def compute_loss(pred, true, epoch=None):
             return F.nll_loss(pred, true), pred
         # binary or multilabel
         else:
-            num_positives = true.sum().item()
-            num_negatives = len(true) - num_positives
+            # num_positives = true.sum().item()
+            # num_negatives = len(true) - num_positives
 
-            # Calculate the weight for each class
-            weight_for_0 = num_positives / len(true)# * 3
-            weight_for_1 = num_negatives / len(true)
+            # # Calculate the weight for each class
+            # weight_for_0 = num_positives / len(true)# * 3
+            # weight_for_1 = num_negatives / len(true)
 
-            # Create a tensor of weights with the same shape as your labels
-            weights = true * weight_for_1 + (1 - true) * weight_for_0
-            weights = weights.to(pred.device)
+            # # Create a tensor of weights with the same shape as your labels
+            # weights = true * weight_for_1 + (1 - true) * weight_for_0
+            # weights = weights.to(pred.device)
 
+            # true = true.float()
+
+            # loss = bce_loss_no_red(pred, true)
+            # loss = (loss * weights).mean()
+            # return loss, torch.sigmoid(pred)
             true = true.float()
-
-            loss = bce_loss_no_red(pred, true)
-            loss = (loss * weights).mean()
-            return loss, torch.sigmoid(pred)
-            # return bce_loss(pred, true), torch.sigmoid(pred)
+            return bce_loss(pred, true), torch.sigmoid(pred)
     elif cfg.model.loss_fun == 'mse':
         true = true.float()
         return mse_loss(pred, true), pred

@@ -26,6 +26,8 @@ def overwrite_defaults_cfg(cfg):
 def extended_cfg(cfg):
     """General extended config options.
     """
+    cfg.out_dir = '/nobackup/users/junhong/Logs/results'
+    cfg.dataset.dir = '/nobackup/users/junhong/Data'
 
     # Additional name tag used in `run_dir` and `wandb_name` auto generation.
     cfg.name_tag = ""
@@ -54,6 +56,9 @@ def extended_cfg(cfg):
     cfg.train.persistent_workers = False
     cfg.train.pin_memory = False
 
+    # NeighborSampler / HGTSampler: number of sampled nodes per layer for each node type
+    cfg.train.neighbor_sizes_dict = ""
+
     # RandomNodeLoader: number of partitions
     cfg.train.num_parts = 10
 
@@ -63,6 +68,12 @@ def extended_cfg(cfg):
 
     # NAGphormer hop2seq hyperparameter
     cfg.gnn.hops = 7
+
+    # SHGN hyperparameter
+    cfg.gnn.residual = True
+
+    # LSGNN hyperparameter
+    cfg.gnn.A_embed = True
 
     cfg.gnn.batch_norm = False
     cfg.gnn.layer_norm = False
@@ -75,4 +86,4 @@ def extended_cfg(cfg):
     cfg.gnn.output_l2_norm = False
     cfg.gnn.jumping_knowledge = False
 
-    cfg.model.loss_fun_weight = None
+    cfg.model.loss_fun_weight = []

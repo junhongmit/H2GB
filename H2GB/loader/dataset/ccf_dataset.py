@@ -1,5 +1,3 @@
-import argparse
-
 import numpy as np
 import pandas as pd
 import torch
@@ -38,6 +36,11 @@ def get_edge_list(df, node_type_cols):
         edge_list[0].append(idx)
         edge_list[1].append(entry_map[node_type_val])
     return torch.tensor(edge_list, dtype=torch.long)
+
+def normalize(feature_matrix):
+    mean = torch.mean(feature_matrix, axis=0)
+    stdev = torch.sqrt(torch.sum((feature_matrix - mean)**2, axis=0)/feature_matrix.shape[0]) + 1e-9
+    return mean, stdev, (feature_matrix - mean) / stdev
 
 
 class CreditCardFraudDetectionDataset(InMemoryDataset):
@@ -154,17 +157,22 @@ class CreditCardFraudDetectionDataset(InMemoryDataset):
         
         data = HeteroData()
         data["transaction"].num_nodes = len(transaction_df)
-        data["transaction"].x = transaction_feats
+        data["transaction"].x = normalize(transaction_feats)[2] # transaction_feats
         data["transaction"].y = torch.tensor(transaction_df["Is Fraud?"].map({'No': 0, 'Yes': 1}).astype("long"))
         data["merchant"].num_nodes = len(unique_merchants_df)
         data["card"].num_nodes = len(card_df)
-        data["card"].x = card_feats
+        data["card"].x = normalize(card_feats)[2] # card_feats
         data["user"].num_nodes = len(user_df)
-        data["user"].x = user_feats
+        data["user"].x = normalize(user_feats)[2] # user_feats
 
         data["transaction", "to", "merchant"].edge_index = t_m_edge_index
         data["transaction", "to", "card"].edge_index = t_c_edge_index
         data["user", "to", "card"].edge_index = u_c_edge_index
+
+        num_nodes = len(transaction_df)
+        data['transaction'].train_mask = index_to_mask(torch.arange(0, int(0.7 * num_nodes)), num_nodes)
+        data['transaction'].val_mask = index_to_mask(torch.arange(int(0.7 * num_nodes), int(0.85 * num_nodes)), num_nodes)
+        data['transaction'].test_mask = index_to_mask(torch.arange(int(0.85 * num_nodes), num_nodes), num_nodes)
         data.validate()
         
         if self.pre_filter is not None:

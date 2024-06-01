@@ -5,12 +5,10 @@ from torch_geometric.data import HeteroData
 
 from H2GB.graphgym import register as register
 from H2GB.graphgym.config import cfg
-from H2GB.graphgym.models.layer import layer_dict, act_dict, Linear
+from H2GB.graphgym.models.layer import layer_dict, act_dict
 from H2GB.graphgym.register import register_node_encoder
-from torch_geometric.nn import (Sequential, Linear, MLP, HeteroConv, GraphConv, SAGEConv, \
-                                GINConv, GATConv, to_hetero, to_hetero_with_bases)
-from H2GB.graphgym.models.layer import BatchNorm1dNode
-
+from torch_geometric.nn import (MLP, HeteroConv, GraphConv, SAGEConv, \
+                                GINConv, GATConv)
 
 class GeneralLayer(nn.Module):
     '''General wrapper for layers'''
@@ -85,7 +83,8 @@ class GeneralMultiLayer(nn.Module):
 @register_node_encoder('Hetero_GNN')
 class HeteroGNNEncoder(torch.nn.Module):
     """
-    The GNN based structure extractor
+    The GNN based structure extractor, works for both homogeneous / heterogeneous graph.
+    Thus, termed hetero GNN encoder.
 
     Args:
         dim_in: the raw feature dimension
@@ -145,13 +144,14 @@ class HeteroGNNEncoder(torch.nn.Module):
         for i in range(self.layers):
             norm_dim = self.dim_hidden
             if self.layer_type == 'GCN':
+                # Changed to GraphConv according to https://github.com/pyg-team/pytorch_geometric/discussions/3479
                 conv = HeteroConv({
-                    edge_type: GraphConv(self.dim_hidden, self.dim_hidden, agg=self.agg, add_self_loops=False) 
+                    edge_type: GraphConv(self.dim_hidden, self.dim_hidden, aggr=self.agg) 
                     for edge_type in self.metadata[1]
                 })
             elif self.layer_type == 'GraphSAGE':
                 conv = HeteroConv({
-                        edge_type: SAGEConv(self.dim_hidden, self.dim_hidden, agg=self.agg) for edge_type in self.metadata[1]
+                        edge_type: SAGEConv(self.dim_hidden, self.dim_hidden, aggr=self.agg) for edge_type in self.metadata[1]
                 })
             elif self.layer_type == 'GIN':
                 mlp = MLP(

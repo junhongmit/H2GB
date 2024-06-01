@@ -59,11 +59,13 @@ class GTLayer(nn.Module):
         if global_model_type == 'None':
             self.attn = None
         elif global_model_type == 'TorchTransformer':
-            self.attn = torch.nn.ModuleDict()
-            for edge_type in metadata[1]:
-                edge_type = '__'.join(edge_type)
-                self.attn[edge_type] = torch.nn.MultiheadAttention(
+            self.attn = torch.nn.MultiheadAttention(
                         dim_h, num_heads, dropout=cfg.gt.attn_dropout, batch_first=True)
+            # self.attn = torch.nn.ModuleDict()
+            # for edge_type in metadata[1]:
+            #     edge_type = '__'.join(edge_type)
+            #     self.attn[edge_type] = torch.nn.MultiheadAttention(
+            #             dim_h, num_heads, dropout=cfg.gt.attn_dropout, batch_first=True)
         elif global_model_type == 'NodeTransformer':
             self.k_lin = torch.nn.ModuleDict()
             self.q_lin = torch.nn.ModuleDict()
@@ -98,6 +100,12 @@ class GTLayer(nn.Module):
                 self.q_lin[node_type] = Linear(dim_in, dim_h)
                 self.v_lin[node_type] = Linear(dim_in, dim_h)
                 self.o_lin[node_type] = Linear(dim_h, dim_out)
+            H, D = self.num_heads, self.dim_h // self.num_heads
+            if cfg.gt.edge_weight:
+                self.edge_weights = nn.Parameter(torch.Tensor(len(metadata[1]), H, D, D))
+                self.msg_weights = nn.Parameter(torch.Tensor(len(metadata[1]), H, D, D))
+                nn.init.xavier_uniform_(self.edge_weights)
+                nn.init.xavier_uniform_(self.msg_weights)
         elif global_model_type == 'SparseEdgeTransformer' or global_model_type == 'SparseEdgeTransformer_Test':
             self.k_lin = torch.nn.ModuleDict()
             self.q_lin = torch.nn.ModuleDict()
@@ -116,15 +124,6 @@ class GTLayer(nn.Module):
                 self.g_lin[edge_type] = Linear(dim_h, dim_out)
                 self.oe_lin[edge_type] = Linear(dim_h, dim_out)
                 self.o_lin[edge_type] = Linear(dim_h, dim_out)
-        elif global_model_type == 'BigBirdEdgeTransformer':
-            bigbird_cfg = cfg.gt.bigbird
-            bigbird_cfg.dim_hidden = dim_h
-            bigbird_cfg.n_heads = num_heads
-            bigbird_cfg.dropout = cfg.gt.attn_dropout
-            self.attn = torch.nn.ModuleDict()
-            for edge_type in metadata[1]:
-                edge_type = '__'.join(edge_type)
-                self.attn[edge_type] = SingleBigBirdLayer(bigbird_cfg)
             
         # Local MPNNs
         norm = None
@@ -387,47 +386,130 @@ class GTLayer(nn.Module):
             h_attn_dict_list = {node_type: [] for node_type in h_dict}
             if self.global_model_type == 'TorchTransformer':
                 D = self.dim_h
-                for edge_type, edge_index in edge_index_dict.items():
-                    src, _, dst = edge_type
-                    edge_type = '__'.join(edge_type)
-                    if hasattr(batch, 'batch'): # With batch dimension
-                        h_dense, key_padding_mask = to_dense_batch(h_dict[src], batch.batch)
-                        q = h_dense
-                        k = h_dense
-                        v = h_dense
-                        h_attn, A = self.attn[edge_type](q, k, v,
-                                    attn_mask=None,
-                                    key_padding_mask=~key_padding_mask,
-                                    need_weights=True)
-                                    # average_attn_weights=False)
-                        h_attn = h_attn[key_padding_mask]
 
-                        # attn_weights = A.detach().cpu()
-                        h_attn_dict_list[dst].append(h_attn)
-                    else:
-                        L = h_dict[dst].shape[0]
-                        S = h_dict[src].shape[0]
-                        q = h_dict[dst].view(1, -1, D)
-                        k = h_dict[src].view(1, -1, D)
-                        v = h_dict[src].view(1, -1, D)
+                homo_data = batch.to_homogeneous()
+                h = homo_data.x
+                edge_index = homo_data.edge_index
+                node_type_tensor = homo_data.node_type
+                edge_type_tensor = homo_data.edge_type
+                if hasattr(batch, 'batch'): # With batch dimension
+                    h_dense, key_padding_mask = to_dense_batch(h, batch.batch)
+                    q = h_dense
+                    k = h_dense
+                    v = h_dense
+                    h_attn, A = self.attn(q, k, v,
+                                attn_mask=None,
+                                key_padding_mask=~key_padding_mask,
+                                need_weights=True)
+                                # average_attn_weights=False)
+                    h_attn = h_attn[key_padding_mask]
 
-                        if cfg.gt.attn_mask == 'Edge':
-                            # Avoid the nan from attention mask
-                            attn_mask = torch.ones(L, S, dtype=torch.float32, device=q.device) * (-1e9)
-                            attn_mask[edge_index[1, :], edge_index[0, :]] = 1
-                            # attn_mask[edge_index[0, :], edge_index[1, :]] = 1 # reversed
-                        elif cfg.gt.attn_mask == 'Bias':
-                            attn_mask = batch.attn_bi[self.index, :, :, :]
+                    # attn_weights = A.detach().cpu()
+                    h_attn_dict_list[dst].append(h_attn)
+                else:
+                    L = h.shape[0]
+                    S = h.shape[0]
+                    q = h.view(1, -1, D)
+                    k = h.view(1, -1, D)
+                    v = h.view(1, -1, D)
+
+                    if cfg.gt.attn_mask in ['Edge', 'kHop']:
+                        attn_mask = torch.full((L, S), -1e9, dtype=torch.float32, device=edge_index.device)
+                        if cfg.gt.attn_mask == 'kHop':
+                            with torch.no_grad():
+                                ones = torch.ones(edge_index.shape[1], device=edge_index.device)
+
+                                edge_index_list = [edge_index]
+                                edge_index_k = edge_index
+                                for i in range(1, self.kHop):
+                                    # print(edge_index_k.shape, int(edge_index_k.max()), L)
+                                    edge_index_k, _ = torch_sparse.spspmm(edge_index_k, torch.ones(edge_index_k.shape[1], device=edge_index.device), 
+                                                                        edge_index, ones, 
+                                                                        L, L, L, True)
+                                    edge_index_list.append(edge_index_k)
+                            
+                            for idx, edge_index in enumerate(reversed(edge_index_list)):
+                                attn_mask[edge_index[1, :], edge_index[0, :]] = self.bias[idx]
                         else:
-                            attn_mask = None
-                        # print(attn_mask, torch.max(attn_mask))
-                        h, A = self.attn[edge_type](q, k, v,
-                                    attn_mask=attn_mask,
-                                    need_weights=True)
-                                    # average_attn_weights=False)
+                            # Avoid the nan from attention mask
+                            attn_mask[edge_index[1, :], edge_index[0, :]] = 1
+                    
+                    elif cfg.gt.attn_mask == 'Bias':
+                        attn_mask = batch.attn_bi[self.index, :, :, :]
+                    else:
+                        attn_mask = None
 
-                        # attn_weights = A.detach().cpu()
-                        h_attn_dict_list[dst].append(h.view(-1, D))
+                    h, A = self.attn(q, k, v,
+                                attn_mask=attn_mask,
+                                need_weights=True)
+                                # average_attn_weights=False)
+
+                    # attn_weights = A.detach().cpu()
+                    h = h.view(1, -1, D)
+                    for idx, node_type in enumerate(batch.node_types):
+                        out_type = h[:, node_type_tensor == idx, :]
+                        h_attn_dict_list[node_type].append(out_type.squeeze())
+
+                # for edge_type, edge_index in edge_index_dict.items():
+                #     src, _, dst = edge_type
+                #     edge_type = '__'.join(edge_type)
+                #     if hasattr(batch, 'batch'): # With batch dimension
+                #         h_dense, key_padding_mask = to_dense_batch(h_dict[src], batch.batch)
+                #         q = h_dense
+                #         k = h_dense
+                #         v = h_dense
+                #         h_attn, A = self.attn[edge_type](q, k, v,
+                #                     attn_mask=None,
+                #                     key_padding_mask=~key_padding_mask,
+                #                     need_weights=True)
+                #                     # average_attn_weights=False)
+                #         h_attn = h_attn[key_padding_mask]
+
+                #         # attn_weights = A.detach().cpu()
+                #         h_attn_dict_list[dst].append(h_attn)
+                #     else:
+                #         L = h_dict[dst].shape[0]
+                #         S = h_dict[src].shape[0]
+                #         q = h_dict[dst].view(1, -1, D)
+                #         k = h_dict[src].view(1, -1, D)
+                #         v = h_dict[src].view(1, -1, D)
+
+                #         if cfg.gt.attn_mask in ['Edge', 'kHop']:
+                #             if cfg.gt.attn_mask == 'kHop':
+                #                 with torch.no_grad():
+                #                     ones = torch.ones(edge_index.shape[1], device=edge_index.device)
+
+                #                     edge_index_list = [edge_index]
+                #                     edge_index_k = edge_index
+                #                     for i in range(1, self.kHop):
+                #                         # print(edge_index_k.shape, int(edge_index_k.max()), L)
+                #                         edge_index_k, _ = torch_sparse.spspmm(edge_index_k, torch.ones(edge_index_k.shape[1], device=edge_index.device), 
+                #                                                             edge_index, ones, 
+                #                                                             L, L, L, True)
+                #                         edge_index_list.append(edge_index_k)
+                                
+                #                 attn_mask = torch.full((L, S), -1e9, dtype=torch.float32, device=edge_index.device)
+                #                 for idx, edge_index in enumerate(reversed(edge_index_list)):
+                #                     attn_mask[edge_index[1, :], edge_index[0, :]] = self.bias[idx]
+                #                 src_nodes, dst_nodes = edge_index_k
+                #                 num_edges = edge_index_k.shape[1]
+                #             else:
+                #                 # Avoid the nan from attention mask
+                #                 attn_mask = torch.full((L, S), -1e9, dtype=torch.float32, device=edge_index.device)
+                #                 attn_mask[edge_index[1, :], edge_index[0, :]] = 1
+                        
+                #         elif cfg.gt.attn_mask == 'Bias':
+                #             attn_mask = batch.attn_bi[self.index, :, :, :]
+                #         else:
+                #             attn_mask = None
+                #         # print(attn_mask, torch.max(attn_mask))
+                #         h, A = self.attn[edge_type](q, k, v,
+                #                     attn_mask=attn_mask,
+                #                     need_weights=True)
+                #                     # average_attn_weights=False)
+
+                #         # attn_weights = A.detach().cpu()
+                #         h_attn_dict_list[dst].append(h.view(-1, D))
 
             elif self.global_model_type == 'NodeTransformer':
                 # st = time.time()
@@ -609,7 +691,7 @@ class GTLayer(nn.Module):
                 homo_data = batch.to_homogeneous()
                 edge_index = homo_data.edge_index
                 node_type_tensor = homo_data.node_type
-                # edge_type_tensor = homo_data.edge_type
+                edge_type_tensor = homo_data.edge_type
                 q = torch.empty((homo_data.x.shape[0], self.dim_h), device=homo_data.x.device)
                 k = torch.empty((homo_data.x.shape[0], self.dim_h), device=homo_data.x.device)
                 v = torch.empty((homo_data.x.shape[0], self.dim_h), device=homo_data.x.device)
@@ -640,6 +722,17 @@ class GTLayer(nn.Module):
                             # m = batch.num_nodes_dict['paper']
                             # n = batch.num_nodes_dict['author']
                             # o = batch.num_nodes_dict['paper']
+                            # edge_index_1 = batch[('paper', 'rev_writes', 'author')].edge_index
+                            # edge_index_2 = batch[('author', 'writes', 'paper')].edge_index
+                            # adj_1 = torch.sparse_coo_tensor(edge_index_1, torch.ones(edge_index_1.size(1)), (m, n), device=edge_index_1.device)
+                            # adj_2 = torch.sparse_coo_tensor(edge_index_2, torch.ones(edge_index_2.size(1)), (n, o), device=edge_index_2.device)
+                            # adj = torch.sparse.mm(adj_1, adj_2)
+                            # edge_index_k = adj.indices()
+                            # edge_index_list.append(edge_index_k)
+
+                            # m = batch.num_nodes_dict['paper']
+                            # n = batch.num_nodes_dict['author']
+                            # o = batch.num_nodes_dict['paper']
                             # edge_index_1 = batch[('paper', 'rev_AP_write_first', 'author')].edge_index
                             # edge_index_2 = batch[('author', 'AP_write_first', 'paper')].edge_index
                             # adj_1 = torch.sparse_coo_tensor(edge_index_1, torch.ones(edge_index_1.size(1)), (m, n), device=edge_index_1.device)
@@ -648,16 +741,16 @@ class GTLayer(nn.Module):
                             # edge_index_k = adj.indices()
                             # edge_index_list.append(edge_index_k)
 
-                            m = batch.num_nodes_dict['paper']
-                            n = batch.num_nodes_dict['paper']
-                            o = batch.num_nodes_dict['paper']
-                            edge_index_1 = batch[('paper', 'PP_cite', 'paper')].edge_index
-                            edge_index_2 = batch[('paper', 'PP_cite', 'paper')].edge_index
-                            adj_1 = torch.sparse_coo_tensor(edge_index_1, torch.ones(edge_index_1.size(1)), (m, n), device=edge_index_1.device)
-                            adj_2 = torch.sparse_coo_tensor(edge_index_2, torch.ones(edge_index_2.size(1)), (n, o), device=edge_index_2.device)
-                            adj = torch.sparse.mm(adj_1, adj_2)
-                            edge_index_k = adj.indices()
-                            edge_index_list.append(edge_index_k)
+                            # m = batch.num_nodes_dict['paper']
+                            # n = batch.num_nodes_dict['paper']
+                            # o = batch.num_nodes_dict['paper']
+                            # edge_index_1 = batch[('paper', 'PP_cite', 'paper')].edge_index
+                            # edge_index_2 = batch[('paper', 'PP_cite', 'paper')].edge_index
+                            # adj_1 = torch.sparse_coo_tensor(edge_index_1, torch.ones(edge_index_1.size(1)), (m, n), device=edge_index_1.device)
+                            # adj_2 = torch.sparse_coo_tensor(edge_index_2, torch.ones(edge_index_2.size(1)), (n, o), device=edge_index_2.device)
+                            # adj = torch.sparse.mm(adj_1, adj_2)
+                            # edge_index_k = adj.indices()
+                            # edge_index_list.append(edge_index_k)
 
                             # m = batch.num_nodes_dict['paper']
                             # n = batch.num_nodes_dict['author']
@@ -691,12 +784,29 @@ class GTLayer(nn.Module):
                         src_nodes, dst_nodes = edge_index
                         num_edges = edge_index.shape[1]
                     # Compute query and key for each edge
-                    edge_q = q[:, dst_nodes, :]  # Queries for destination nodes # h * edges * d_model
+                    edge_q = q[:, dst_nodes, :]  # Queries for destination nodes # num_heads * num_edges * d_k
                     edge_k = k[:, src_nodes, :]  # Keys for source nodes
                     edge_v = v[:, src_nodes, :]
 
+                    if hasattr(self, 'edge_weights'):
+                        edge_weight = self.edge_weights[edge_type_tensor]  # (num_edges, num_heads, d_k, d_k)
+
+                        edge_weight = edge_weight.transpose(0, 1)  # Transpose for batch matrix multiplication: (num_heads, num_edges, d_k, d_k)
+                        # edge_k = edge_k.transpose(0, 1)  # Transpose to (num_edges, num_heads, d_k)
+                        edge_k = edge_k.unsqueeze(-1) # Add dimension for matrix multiplication (num_heads, num_edges, d_k, 1)
+
+                        # print(edge_weight.shape, edge_k.shape)
+                        edge_k = torch.matmul(edge_weight, edge_k)  # (num_heads, num_edges, d_k, 1)
+                        edge_k = edge_k.squeeze(-1)  # Remove the extra dimension (num_heads, num_edges, d_k)
+                    # edge_k = edge_k.transpose(0, 1)  # Transpose back (num_edges, num_heads, d_k)
+
+                    # Apply weight matrix to keys
+                    # edge_k = torch.einsum('ehij,hej->hei', edge_weight, edge_k)
+                    # msg_weight = self.msg_weights[edge_type_tensor]
+                    # edge_v = torch.einsum('ehij,hej->hei', msg_weight, edge_v)
+
                     # Compute attention scores
-                    edge_scores = torch.sum(edge_q * edge_k, dim=-1) / math.sqrt(D) # h * edges
+                    edge_scores = torch.sum(edge_q * edge_k, dim=-1) / math.sqrt(D) # num_heads * num_edges
                     edge_scores = torch.clamp(edge_scores, min=-5, max=5)
                     if cfg.gt.attn_mask in ['kHop', 'kHop_diffusion']:
                         edge_scores = edge_scores + attn_mask[dst_nodes, src_nodes]
@@ -889,6 +999,7 @@ class GTLayer(nn.Module):
                                 edge_index_k = edge_index
                                 for i in range(1, self.kHop):
                                     # print(edge_index_k.shape, int(edge_index_k.max()), L)
+                                    print(edge_index_k.max(), L)
                                     edge_index_k, _ = torch_sparse.spspmm(edge_index_k, torch.ones(edge_index_k.shape[1], device=edge_index.device), 
                                                                         edge_index, ones, 
                                                                         L, L, L, True)

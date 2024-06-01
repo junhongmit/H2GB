@@ -1,20 +1,13 @@
 import torch
-import torch_sparse
 from torch_geometric.data import HeteroData
 from torch_sparse import SparseTensor, matmul
 from torch_geometric.nn.conv.gcn_conv import gcn_norm
-from torch_geometric.nn import GCNConv, SGConv, GATConv, JumpingKnowledge, APPNP, GCN2Conv, MessagePassing
-import scipy.sparse
 import torch.nn as nn
 import torch.nn.functional as F
 
-from H2GB.graphgym.models import head  # noqa, register module
 from H2GB.graphgym import register as register
 from H2GB.graphgym.config import cfg
-from H2GB.graphgym.models.gnn import GNNPreMP
 from H2GB.graphgym.register import register_network
-from torch_geometric.nn import Linear, HGTConv
-from torch_geometric.loader import NeighborLoader
 from H2GB.graphgym.models.layer import BatchNorm1dNode
 
 class FeatureEncoder(torch.nn.Module):

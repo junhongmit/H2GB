@@ -208,7 +208,7 @@ class IeeeFraudDetectionDataset(InMemoryDataset):
             print(f"Creating edges for {node_type} nodes...")
             edge_list = get_edge_list(transaction_df, node_type)
             data["transaction", "to", node_type].edge_index = edge_list
-            data[node_type].num_nodes = edge_list[1].max() + 1
+            data[node_type].num_nodes = int(edge_list[1].max() + 1)
         data.validate()
 
         if self.pre_filter is not None:

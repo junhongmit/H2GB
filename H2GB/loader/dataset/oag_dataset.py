@@ -53,8 +53,8 @@ class OAGDataset(InMemoryDataset):
 
     @property
     def raw_file_names(self) -> List[str]:
-        x = ['info.dat', 'node.dat', 'link.dat', 'label.dat', 'label.dat.test']
-        return [osp.join(self.names[self.name], f) for f in x]
+        x = [f'graph_{self.names[self.name]}.pt']
+        return x
 
     @property
     def processed_file_names(self) -> str:

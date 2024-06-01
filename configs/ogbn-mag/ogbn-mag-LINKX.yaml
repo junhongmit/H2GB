@@ -3,7 +3,7 @@ metric_best: accuracy
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: OGB
@@ -13,7 +13,7 @@ dataset:
   task_entity: paper
   transductive: True
   node_encoder: True
-  node_encoder_name: Hetero_Raw
+  node_encoder_name: Raw
   node_encoder_bn: False
   edge_encoder: False
   edge_encoder_name: none
@@ -22,7 +22,7 @@ num_threads: 24
 num_workers: 18
 train:
   mode: custom
-  sampler: hgt
+  sampler: linkx #hgt
   neighbor_sizes: [512, 512, 512, 512, 512, 512] # 512 * 6
   iter_per_epoch: 256
   batch_size: 32
@@ -32,7 +32,7 @@ train:
   persistent_workers: True
   pin_memory: True
 val:
-  sampler: hgt
+  sampler: linkx #hgt
   iter_per_epoch: 512
   tqdm: True
 model:

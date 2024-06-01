@@ -3,7 +3,7 @@ metric_best: f1
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: IEEE-CIS
@@ -13,7 +13,7 @@ dataset:
   task_entity: transaction
   transductive: True
   node_encoder: True
-  node_encoder_name: Hetero_Raw
+  node_encoder_name: Raw
   node_encoder_bn: False
   edge_encoder: False
   edge_encoder_name: none
@@ -23,7 +23,7 @@ num_workers: 18
 train:
   mode: custom
   sampler: hgt
-  neighbor_sizes: [256, 256, 256, 256] # 256 * 4
+  neighbor_sizes: [64, 64, 64, 64, 64, 64] # 64 * 6
   iter_per_epoch: 256
   batch_size: 32
   eval_period: 4
@@ -37,9 +37,8 @@ val:
   tqdm: True
 model:
   type: HomoGNNModel
-  # loss_fun: cross_entropy
   loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 5] # Shut off the auto class weight
+  loss_fun_weight: [1, 5]
   edge_decoding: dot
   graph_pooling: mean
 gnn:
@@ -47,12 +46,12 @@ gnn:
   layers_mp: 3
   layers_pre_mp: 0
   layers_post_mp: 1  # Not used when `gnn.head: san_graph`
-  dim_inner: 64  # `gt.dim_hidden` must match `gnn.dim_inner`
+  dim_inner: 128  # `gt.dim_hidden` must match `gnn.dim_inner`
   batch_norm: True
   layer_norm: False
   act: relu
   input_dropout: 0.0
-  dropout: 0.2
+  dropout: 0.5
   agg: mean
 optim:
   batch_accumulation: 32

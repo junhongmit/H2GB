@@ -32,9 +32,6 @@ class FeatureEncoder(torch.nn.Module):
             NodeEncoder = register.node_encoder_dict[cfg.dataset.node_encoder_name]
             self.node_encoder = NodeEncoder(cfg.gnn.dim_inner, dataset)
             if cfg.dataset.node_encoder_bn:
-                # self.node_encoder_bn = BatchNorm1dNode(
-                #     new_layer_config(cfg.gnn.dim_inner, -1, -1, has_act=False,
-                #                      has_bias=False, cfg=cfg))
                 self.node_encoder_bn = BatchNorm1dNode(cfg.gnn.dim_inner)
             # Update dim_in to reflect the new dimension of the node features
             if self.is_hetero:
@@ -223,6 +220,7 @@ class HomoGNNModel(torch.nn.Module):
         if isinstance(batch, HeteroData):
             homo = batch.to_homogeneous()
             x, edge_index = homo.x, homo.edge_index
+            x = x.nan_to_num()
             node_type_tensor = homo.node_type
         else:
             x, edge_index = batch.x, batch.edge_index

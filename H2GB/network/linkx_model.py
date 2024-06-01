@@ -137,6 +137,7 @@ class LINKX(nn.Module):
             row, col = data.edge_index[0, :], data.n_id[data.edge_index[1, :]]
         else:
             row, col = data.edge_index
+        row = row-row.min()
         A = SparseTensor(row=row, col=col,	
                  sparse_sizes=(m, self.num_nodes)
                         ).to_torch_sparse_coo_tensor()
@@ -167,4 +168,6 @@ class LINKX(nn.Module):
                     batch[task].y[batch[task][mask]]
         else:
             mask = f'{batch.split}_mask'
+            # print(batch[mask], batch[mask].sum())
+            # print(x[batch[mask]], batch.y[batch[mask]], batch.y[batch[mask]].numel())
             return x[batch[mask]], batch.y[batch[mask]]

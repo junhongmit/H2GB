@@ -3,7 +3,7 @@ metric_best: accuracy
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: OGB
@@ -23,7 +23,7 @@ num_workers: 18
 train:
   mode: custom
   sampler: hgt
-  neighbor_sizes: [512, 512, 512, 512, 512, 512] # 512 * 6
+  neighbor_sizes: [512, 512, 512] # 512 * 3
   iter_per_epoch: 256
   batch_size: 32
   eval_period: 4
@@ -43,7 +43,7 @@ model:
 gt:
   layer_type: SparseNodeTransformer
   layers_pre_gt: 1
-  layers: 4
+  layers: 3
   layers_post_gt: 1
   attn_heads: 8
   dim_hidden: 512  # `gt.dim_hidden` must match `gnn.dim_inner`

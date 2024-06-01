@@ -34,6 +34,9 @@ def set_cfg_gt(cfg):
     # Size of the hidden node and edge representation
     cfg.gt.dim_hidden = 64
 
+    # Turn on edge-type based weight
+    cfg.gt.edge_weight = True
+
     # Full attention SAN transformer including all possible pairwise edges
     cfg.gt.full_graph = True
 

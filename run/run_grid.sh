@@ -79,20 +79,24 @@ function run_repeats {
 # )
 
 cfg_dir="configs"
-DATASET="oag-chem"
+DATASET="RCDD"
 # "AML-Small-HI"
 # "ogbn-products"
 # "VOCSuperpixels"
 # "COCOSuperpixels"
 # "Heterophilic_arxiv-year"
 # "Heterophilic_snap-patents"
-CONFIG="MLP"
+CONFIG="SGC+1Hop"
 parameters=(
     # Multi-seed experiments
-    "seed 43" # train.auto_resume True
-    "seed 44"
-    "seed 45"
-    "seed 46"
+    "seed 43 " # train.auto_resume True
+    "seed 44 "
+    "seed 45 "
+    "seed 46 "
+    # "seed 43 train.auto_resume True" # train.auto_resume True
+    # "seed 44 train.auto_resume True"
+    # "seed 45 train.auto_resume True"
+    # "seed 46 train.auto_resume True"
 
     # # Walk length test
     # "train.neighbor_sizes \"[512, 512, 512, 512]\""

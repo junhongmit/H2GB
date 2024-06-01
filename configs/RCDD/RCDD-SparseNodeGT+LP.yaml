@@ -3,7 +3,7 @@ metric_best: f1
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: PyG-RCDD
@@ -40,8 +40,7 @@ val:
   tqdm: True
 model:
   type: GTModel
-  loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 1] # Shut off the auto class weight
+  loss_fun: cross_entropy
   edge_decoding: dot
   graph_pooling: mean
 gt:
@@ -53,15 +52,15 @@ gt:
   dim_hidden: 256  # `gt.dim_hidden` must match `gnn.dim_inner`
   input_dropout: 0.0
   dropout: 0.2     # global transformer dropout
-  attn_dropout: 0.2
+  attn_dropout: 0.0
   batch_norm: False
   layer_norm: True
-  act: relu
+  act: gelu
   attn_mask: Edge
   residual: Fixed
   ffn: Type
 gnn:
-  dropout: 0.0  # local MP-GNN dropout
+  dropout: 0.2  # local MP-GNN dropout
 optim:
   batch_accumulation: 32
   clip_grad_norm: True

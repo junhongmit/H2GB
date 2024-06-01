@@ -102,71 +102,80 @@ def train_epoch(cur_epoch, logger, loader, model, optimizer, scheduler, batch_ac
         pbar.update(1)
         return
 
-    torch.cuda.empty_cache() 
     optimizer.zero_grad()
     it = 0
     time_start = time.time()
     # with torch.autograd.set_detect_anomaly(True):
     while True:
-        runtime_stats_cuda.start_region(
-            "total", runtime_stats_cuda.get_last_event())
-        runtime_stats_cuda.start_region(
-            "sampling", runtime_stats_cuda.get_last_event())
-        # print('Crashed?')
-        batch = next(iterator, None)
-        # print('Crashed?')
-        it += 1
-        if batch is None:
-            runtime_stats_cuda.end_region("sampling")
-            runtime_stats_cuda.end_region(
+        try:
+            torch.cuda.empty_cache() 
+            runtime_stats_cuda.start_region(
                 "total", runtime_stats_cuda.get_last_event())
-            break
-        runtime_stats_cuda.end_region("sampling")
+            runtime_stats_cuda.start_region(
+                "sampling", runtime_stats_cuda.get_last_event())
+            # print('Crashed?')
+            batch = next(iterator, None)
+            # print('Crashed?')
+            it += 1
+            if batch is None:
+                runtime_stats_cuda.end_region("sampling")
+                runtime_stats_cuda.end_region(
+                    "total", runtime_stats_cuda.get_last_event())
+                break
+            runtime_stats_cuda.end_region("sampling")
 
-        runtime_stats_cuda.start_region("data_transfer", runtime_stats_cuda.get_last_event())
-        if isinstance(batch, Data) or isinstance(batch, HeteroData):
-            batch.split = 'train'
-            batch.to(torch.device(cfg.device))
-        else: # NAGphormer
-            batch = [x.to(torch.device(cfg.device)) for x in batch]
-        runtime_stats_cuda.end_region("data_transfer")
+            runtime_stats_cuda.start_region("data_transfer", runtime_stats_cuda.get_last_event())
+            if isinstance(batch, Data) or isinstance(batch, HeteroData):
+                batch.split = 'train'
+                batch.to(torch.device(cfg.device))
+            else: # NAGphormer, HINo
+                batch = [x.to(torch.device(cfg.device)) for x in batch]
+            runtime_stats_cuda.end_region("data_transfer")
 
-        runtime_stats_cuda.start_region("train", runtime_stats_cuda.get_last_event())
-        runtime_stats_cuda.start_region("forward", runtime_stats_cuda.get_last_event())
-        pred, true = model(batch)
-        runtime_stats_cuda.end_region("forward")
-        runtime_stats_cuda.start_region("loss", runtime_stats_cuda.get_last_event())
-        if cfg.model.loss_fun == 'curriculum_learning_loss':
-            loss, pred_score = compute_loss(pred, true, cur_epoch)
-        else:
-            loss, pred_score = compute_loss(pred, true)
-        _true = true.detach().to('cpu', non_blocking=True)
-        _pred = pred_score.detach().to('cpu', non_blocking=True)
-        runtime_stats_cuda.end_region("loss")
+            runtime_stats_cuda.start_region("train", runtime_stats_cuda.get_last_event())
+            runtime_stats_cuda.start_region("forward", runtime_stats_cuda.get_last_event())
+            pred, true = model(batch)
+            runtime_stats_cuda.end_region("forward")
+            runtime_stats_cuda.start_region("loss", runtime_stats_cuda.get_last_event())
+            if cfg.model.loss_fun == 'curriculum_learning_loss':
+                loss, pred_score = compute_loss(pred, true, cur_epoch)
+            else:
+                loss, pred_score = compute_loss(pred, true)
+            _true = true.detach().to('cpu', non_blocking=True)
+            _pred = pred_score.detach().to('cpu', non_blocking=True)
+            runtime_stats_cuda.end_region("loss")
 
-        runtime_stats_cuda.start_region("backward", runtime_stats_cuda.get_last_event())
-        loss.backward()
-        runtime_stats_cuda.end_region("backward")
-        # check_grad(model)
-        # Parameters update after accumulating gradients for given num. batches.
-        if ((it + 1) % batch_accumulation == 0) or (it + 1 == len(loader)):
-            if cfg.optim.clip_grad_norm:
-                torch.nn.utils.clip_grad_norm_(model.parameters(),
-                                            cfg.optim.clip_grad_norm_value)
-            optimizer.step()
-            optimizer.zero_grad()
-        runtime_stats_cuda.end_region("train")
-        runtime_stats_cuda.end_region("total", runtime_stats_cuda.get_last_event())
-        cfg.params = params_count(model)
-        logger.update_stats(true=_true,
-                            pred=_pred,
-                            loss=loss.detach().cpu().item(),
-                            lr=scheduler.get_last_lr()[0],
-                            time_used=time.time() - time_start,
-                            params=cfg.params,
-                            dataset_name=cfg.dataset.name)
-        pbar.update(1)
-        time_start = time.time()
+            runtime_stats_cuda.start_region("backward", runtime_stats_cuda.get_last_event())
+            loss.backward()
+            runtime_stats_cuda.end_region("backward")
+            # print(loss.detach().cpu().item())
+            # check_grad(model)
+            # Parameters update after accumulating gradients for given num. batches.
+            if ((it + 1) % batch_accumulation == 0) or (it + 1 == len(loader)):
+                if cfg.optim.clip_grad_norm:
+                    torch.nn.utils.clip_grad_norm_(model.parameters(),
+                                                cfg.optim.clip_grad_norm_value)
+                optimizer.step()
+                optimizer.zero_grad()
+            runtime_stats_cuda.end_region("train")
+            runtime_stats_cuda.end_region("total", runtime_stats_cuda.get_last_event())
+            cfg.params = params_count(model)
+            logger.update_stats(true=_true,
+                                pred=_pred,
+                                loss=loss.detach().cpu().item(),
+                                lr=scheduler.get_last_lr()[0],
+                                time_used=time.time() - time_start,
+                                params=cfg.params,
+                                dataset_name=cfg.dataset.name)
+            pbar.update(1)
+            time_start = time.time()
+        except RuntimeError as e:
+            if "cannot sample n_sample <= 0 samples" in str(e):
+                print(f"Skipping batch due to error: {e}")
+                continue
+            else:
+                # If it's a different error, re-raise it
+                raise
     
     runtime_stats_cuda.end_epoch()
     runtime_stats_cuda.report_stats(
@@ -177,31 +186,48 @@ def train_epoch(cur_epoch, logger, loader, model, optimizer, scheduler, batch_ac
 @torch.no_grad()
 def eval_epoch(logger, loader, model, split='val'):
     model.eval()
-    time_start = time.time()
-    for batch in tqdm(loader, disable=not cfg.val.tqdm):
-        if isinstance(batch, Data) or isinstance(batch, HeteroData):
-            batch.split = split
-            batch.to(torch.device(cfg.device))
-        else: # NAGphormer
-            batch = batch = [x.to(torch.device(cfg.device)) for x in batch]
-        if cfg.gnn.head == 'inductive_edge':
-            pred, true, extra_stats = model(batch)
-        else:
-            pred, true = model(batch)
-            extra_stats = {}
+    pbar = tqdm(total=len(loader), disable=not cfg.val.tqdm)
+    iterator = iter(loader)
 
-        loss, pred_score = compute_loss(pred, true)
-        _true = true.detach().to('cpu', non_blocking=True)
-        _pred = pred_score.detach().to('cpu', non_blocking=True)
-        
-        logger.update_stats(true=_true,
-                            pred=_pred,
-                            loss=loss.detach().cpu().item(),
-                            lr=0, time_used=time.time() - time_start,
-                            params=cfg.params,
-                            dataset_name=cfg.dataset.name,
-                            **extra_stats)
-        time_start = time.time()
+    time_start = time.time()
+    it = 0
+    while True:
+        try:
+            batch = next(iterator, None)
+            it += 1
+            if batch is None:
+                break
+            if isinstance(batch, Data) or isinstance(batch, HeteroData):
+                batch.split = split
+                batch.to(torch.device(cfg.device))
+            else: # NAGphormer
+                batch = [x.to(torch.device(cfg.device)) for x in batch]
+            if cfg.gnn.head == 'inductive_edge':
+                pred, true, extra_stats = model(batch)
+            else:
+                pred, true = model(batch)
+                extra_stats = {}
+
+            loss, pred_score = compute_loss(pred, true)
+            _true = true.detach().to('cpu', non_blocking=True)
+            _pred = pred_score.detach().to('cpu', non_blocking=True)
+            
+            logger.update_stats(true=_true,
+                                pred=_pred,
+                                loss=loss.detach().cpu().item(),
+                                lr=0, time_used=time.time() - time_start,
+                                params=cfg.params,
+                                dataset_name=cfg.dataset.name,
+                                **extra_stats)
+            pbar.update(1)
+            time_start = time.time()
+        except RuntimeError as e:
+            if "cannot sample n_sample <= 0 samples" in str(e):
+                print(f"Skipping batch due to error: {e}")
+                continue
+            else:
+                # If it's a different error, re-raise it
+                raise
 
 
 @register_train('custom')

@@ -3,7 +3,7 @@ metric_best: accuracy
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: OGB
@@ -13,7 +13,7 @@ dataset:
   task_entity: paper
   transductive: True
   node_encoder: True
-  node_encoder_name: Hetero_Raw
+  node_encoder_name: Raw
   node_encoder_bn: False
   edge_encoder: False
   edge_encoder_name: none
@@ -52,7 +52,6 @@ gnn:
   input_dropout: 0.0
   dropout: 0.2
   agg: mean
-  use_linear: False
 optim:
   batch_accumulation: 32
   clip_grad_norm: True

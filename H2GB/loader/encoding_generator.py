@@ -4,19 +4,19 @@ import os.path as osp
 from tqdm import tqdm
 from typing import Tuple
 import torch
-from torch.utils.data import DataLoader, RandomSampler
-from torch_geometric.nn import (Node2Vec, MetaPath2Vec)
+from torch_geometric.nn import Node2Vec
 from torch_geometric.nn.kge import (ComplEx, DistMult, TransE)
 from torch_geometric.data import HeteroData
 
 from H2GB.graphgym.config import cfg
-from H2GB.loader.embedding.HTNE import HTNE_Dataset, HTNE
+from H2GB.loader.embedding.metapath2vec import MetaPath2Vec
 
-NODE2VEC_PT_NAME = 'node2vec.pt'
-METAPATH_PT_NAME = 'metapath.pt'
+NODE2VEC_PT_NAME = 'node2vec'
+METAPATH_PT_NAME = 'metapath'
 
 def preprocess_Node2Vec(pe_dir, dataset):
-    embedding_dir = osp.join(pe_dir, NODE2VEC_PT_NAME)
+    embedding_dir = osp.join(pe_dir, NODE2VEC_PT_NAME + '_' + str(cfg.posenc_Hetero_Node2Vec.dim_pe) + '.pt')
+    temp_path = osp.join(pe_dir, 'temp_' + str(cfg.posenc_Hetero_Node2Vec.dim_pe) + '.pt')
     device = cfg.device
 
     walk_length = 20
@@ -37,6 +37,13 @@ def preprocess_Node2Vec(pe_dir, dataset):
         num_negative_samples = 8
         batch_size = 128
         lr = 0.01
+    elif dataset.name in ['cs', 'engineering', 'chemistry']:
+        walk_length = 64
+        context_size = 7
+        walks_per_node = 30
+        num_negative_samples = 8
+        batch_size = 128
+        lr = 0.01
     elif dataset.name == 'ogbn-papers100M':
         walk_length = 20
         context_size = 10
@@ -45,7 +52,21 @@ def preprocess_Node2Vec(pe_dir, dataset):
         batch_size = 128
         lr = 0.01
         device = 'cpu'
+    elif dataset.name == 'ogbn-mag':
+        walk_length = 64
+        context_size = 7
+        walks_per_node = 30
+        num_negative_samples = 1
+        batch_size = 128
+        lr = 0.01
     elif dataset.name == 'pokec':
+        walk_length = 80
+        context_size = 20
+        walks_per_node = 10
+        num_negative_samples = 1
+        batch_size = 128
+        lr = 0.01
+    elif dataset.name == 'RCDD':
         walk_length = 80
         context_size = 20
         walks_per_node = 10
@@ -61,7 +82,7 @@ def preprocess_Node2Vec(pe_dir, dataset):
             data = data.to_homogeneous()
         model = Node2Vec(data.edge_index, embedding_dim=cfg.posenc_Hetero_Node2Vec.dim_pe, 
                         walk_length=walk_length, context_size=context_size, walks_per_node=walks_per_node,
-                        num_negative_samples=num_negative_samples, sparse=True).to(device)
+                        num_negative_samples=num_negative_samples, num_nodes=data.num_nodes, sparse=True).to(device)
         
         loader = model.loader(batch_size=batch_size, shuffle=True, num_workers=4)
         optimizer = torch.optim.SparseAdam(list(model.parameters()), lr=lr)
@@ -113,6 +134,18 @@ def preprocess_Node2Vec(pe_dir, dataset):
             train(epoch)
             acc = test()
             print(f'Epoch: {epoch}, Accuracy: {acc:.4f}')
+            emb = {
+                'dim_pe': model.embedding_dim,
+                'walk_length': model.walk_length,
+                'context_size': model.context_size,
+                'walks_per_node': model.walks_per_node,
+                'model': model.embedding.weight.data.cpu(),
+                'epoch': epoch
+            }
+
+            if not osp.exists(pe_dir):
+                os.makedirs(pe_dir)
+            torch.save(emb, temp_path)
         models.append(model.embedding.weight.data.cpu())
         # if idx >= 10:
         #     break
@@ -130,17 +163,17 @@ def preprocess_Node2Vec(pe_dir, dataset):
     torch.save(emb, embedding_dir)
 
 def check_Node2Vec(pe_dir):
-    return osp.exists(osp.join(pe_dir, NODE2VEC_PT_NAME))
+    return osp.exists(osp.join(pe_dir, NODE2VEC_PT_NAME + '_' + str(cfg.posenc_Hetero_Node2Vec.dim_pe) + '.pt'))
 
 def load_Node2Vec(pe_dir):
-    embedding_path = osp.join(pe_dir, NODE2VEC_PT_NAME)
+    embedding_path = osp.join(pe_dir, NODE2VEC_PT_NAME + '_' + str(cfg.posenc_Hetero_Node2Vec.dim_pe) + '.pt')
     emb = torch.load(embedding_path)
     return emb['model']
 
 
 def preprocess_Metapath(pe_dir, dataset):
-    embedding_path = osp.join(pe_dir, METAPATH_PT_NAME)
-    temp_path = osp.join(pe_dir, 'temp.pt')
+    embedding_path = osp.join(pe_dir, METAPATH_PT_NAME + '_' + str(cfg.posenc_Hetero_Metapath.dim_pe) + '.pt')
+    temp_path = osp.join(pe_dir, 'temp_' + str(cfg.posenc_Hetero_Metapath.dim_pe) + '.pt')
     data = dataset[0]
     device = cfg.device
     
@@ -266,6 +299,46 @@ def preprocess_Metapath(pe_dir, dataset):
         batch_size = 128
         lr = 0.01
         # device = 'cpu'
+    elif dataset.name == 'Pokec':
+        metapath = [
+            ('user', 'has_friend', 'user'),
+            ('user', 'lists', 'life_style'),
+            ('life_style', 'rev_lists', 'user'),
+            ('user', 'lists', 'music'),
+            ('music', 'rev_lists', 'user'),
+            ('user', 'lists', 'cars'),
+            ('cars', 'rev_lists', 'user'),
+            ('user', 'lists', 'politics'),
+            ('politics', 'rev_lists', 'user'),
+            ('user', 'lists', 'relationships'),
+            ('relationships', 'rev_lists', 'user'),
+            ('user', 'lists', 'art_culture'),
+            ('art_culture', 'rev_lists', 'user'),
+            ('user', 'lists', 'hobbies_interests'),
+            ('hobbies_interests', 'rev_lists', 'user'),
+            ('user', 'lists', 'science_technologies'),
+            ('science_technologies', 'rev_lists', 'user'),
+            ('user', 'lists', 'computers_internet'),
+            ('computers_internet', 'rev_lists', 'user'),
+            ('user', 'lists', 'education'),
+            ('education', 'rev_lists', 'user'),
+            ('user', 'lists', 'sport'),
+            ('sport', 'rev_lists', 'user'),
+            ('user', 'lists', 'movies'),
+            ('movies', 'rev_lists', 'user'),
+            ('user', 'lists', 'travelling'),
+            ('travelling', 'rev_lists', 'user'),
+            ('user', 'lists', 'health'),
+            ('health', 'rev_lists', 'user'),
+            ('user', 'lists', 'companies_brands'),
+            ('companies_brands', 'rev_lists', 'user')
+        ]
+        walk_length = 64
+        context_size = 7
+        walks_per_node = 30
+        num_negative_samples = 8
+        batch_size = 128
+        lr = 0.01
     elif dataset.name == 'pokec':
         metapath = [
             ('user', 'is_friend_with', 'user'),
@@ -312,6 +385,50 @@ def preprocess_Metapath(pe_dir, dataset):
         ]
         walk_length = 64
         context_size = 7
+        walks_per_node = 18
+        num_negative_samples = 6
+        batch_size = 128
+        lr = 0.01
+    elif dataset.name == 'IEEE-CIS':
+        metapath = [
+            ('transaction', 'to', 'card1'),
+            ('card1', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'card2'),
+            ('card2', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'card3'),
+            ('card3', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'card4'),
+            ('card4', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'card5'),
+            ('card5', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'card6'),
+            ('card6', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'ProductCD'),
+            ('ProductCD', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'addr1'),
+            ('addr1', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'addr2'),
+            ('addr2', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'P_emaildomain'),
+            ('P_emaildomain', 'rev_to', 'transaction'),
+            ('transaction', 'to', 'R_emaildomain'),
+            ('R_emaildomain', 'rev_to', 'transaction'),
+        ]
+        walk_length = 64
+        context_size = 7
+        walks_per_node = 30
+        num_negative_samples = 8
+        batch_size = 128
+        lr = 0.01
+    elif dataset.name == 'DNS':
+        metapath = [
+            ('domain_node', 'resolves', 'ip_node'),
+            ('ip_node', 'rev_resolves', 'domain_node'),
+            ('domain_node', 'similar', 'domain_node'),
+            ('domain_node', 'apex', 'domain_node')
+        ]
+        walk_length = 64
+        context_size = 7
         walks_per_node = 30
         num_negative_samples = 8
         batch_size = 128
@@ -332,7 +449,7 @@ def preprocess_Metapath(pe_dir, dataset):
     model = MetaPath2Vec(data.edge_index_dict, embedding_dim=cfg.posenc_Hetero_Metapath.dim_pe,
                      metapath=metapath, walk_length=walk_length, context_size=context_size,
                      walks_per_node=walks_per_node, num_negative_samples=num_negative_samples,
-                     sparse=True).to(device)
+                     num_nodes_dict=data.num_nodes_dict, sparse=True).to(device)
     if osp.exists(temp_path):
         print('Load last checkpoint...')
         emb = torch.load(temp_path)
@@ -417,6 +534,20 @@ def preprocess_Metapath(pe_dir, dataset):
         train(epoch)
         acc = test()
         print(f'Epoch: {epoch}, Accuracy: {acc:.4f}')
+        # Save temporary checkpoint
+        emb = {
+            'dim_pe': model.embedding_dim,
+            'walk_length': model.walk_length,
+            'context_size': model.context_size,
+            'walks_per_node': model.walks_per_node,
+            'model': model.embedding,
+            'start': model.start,
+            'end': model.end,
+            'epoch': epoch
+        }
+        if not osp.exists(pe_dir):
+            os.makedirs(pe_dir)
+        torch.save(emb, temp_path)
             
     emb = {
         'dim_pe': model.embedding_dim,
@@ -433,10 +564,10 @@ def preprocess_Metapath(pe_dir, dataset):
     torch.save(emb, embedding_path)
 
 def check_Metapath(pe_dir):
-    return osp.exists(osp.join(pe_dir, METAPATH_PT_NAME))
+    return osp.exists(osp.join(pe_dir, METAPATH_PT_NAME + '_' + str(cfg.posenc_Hetero_Metapath.dim_pe) + '.pt'))
 
 def load_Metapath(pe_dir):
-    embedding_path = osp.join(pe_dir, METAPATH_PT_NAME)
+    embedding_path = osp.join(pe_dir, METAPATH_PT_NAME + '_' + str(cfg.posenc_Hetero_Metapath.dim_pe) + '.pt')
     emb = torch.load(embedding_path, map_location='cpu')
     return emb
 
@@ -446,11 +577,12 @@ def preprocess_KGE(pe_dir, dataset, name):
         'ComplEx': ComplEx,
         'DistMult': DistMult,
     }
-    embedding_dir = osp.join(pe_dir, f'{name}.pt')
+    embedding_dir = osp.join(pe_dir, f'{name}_' + str(eval(f'cfg.posenc_Hetero_{name}.dim_pe')) + '.pt')
+    temp_path = osp.join(pe_dir, 'temp_' + str(eval(f'cfg.posenc_Hetero_{name}.dim_pe')) + '.pt')
 
     count = 0
     start, end = {}, {}
-    for node_type in dataset[0].num_nodes_dict:
+    for node_type in dataset[0].node_types:
         start[node_type] = count
         count += dataset[0].num_nodes_dict[node_type]
         end[node_type] = count
@@ -464,11 +596,13 @@ def preprocess_KGE(pe_dir, dataset, name):
         hidden_channels=eval(f'cfg.posenc_Hetero_{name}.dim_pe'),
     ).to(cfg.device)
 
+    batch_size = 60000
+
     loader = model.loader(
         head_index=data.edge_index[0],
         rel_type=data.edge_type,
         tail_index=data.edge_index[1],
-        batch_size=60000,
+        batch_size=batch_size,
         shuffle=True,
     )
 
@@ -518,13 +652,22 @@ def preprocess_KGE(pe_dir, dataset, name):
             k=10,
         )
 
-    epoch = 50
+    epoch = 5
     for epoch in range(1, epoch+1):
         train(epoch)
         # print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}')
         if epoch % 25 == 0:
             rank, hits = test()
             print(f'Epoch: {epoch:03d}, Val Mean Rank: {rank:.2f}, Val Hits@10: {hits:.4f}')
+        emb = {
+            'start': start,
+            'end': end,
+            'model': model,
+            'epoch': epoch
+        }
+        if not osp.exists(pe_dir):
+            os.makedirs(pe_dir)
+        torch.save(emb, temp_path)
 
     rank, hits_at_10 = test()
     print(f'Test Mean Rank: {rank:.2f}, Test Hits@10: {hits_at_10:.4f}')

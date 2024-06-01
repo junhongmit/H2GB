@@ -3,7 +3,7 @@ metric_best: accuracy
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: OGB
@@ -23,7 +23,7 @@ num_workers: 18
 train:
   mode: custom
   sampler: hin
-  neighbor_sizes: [20] # 512 * 6
+  neighbor_sizes: [25] # 512 * 6
   iter_per_epoch: 256
   batch_size: 32
   eval_period: 4
@@ -42,9 +42,9 @@ model:
   graph_pooling: mean
 gnn:
   layers_pre_mp: 0
-  layers_mp: 1
+  layers_mp: 2
   layers_post_mp: 1  # Not used when `gnn.head: san_graph`
-  dim_inner: 32  # `gt.dim_hidden` must match `gnn.dim_inner`
+  dim_inner: 64  # `gt.dim_hidden` must match `gnn.dim_inner`
   batch_norm: True
   layer_norm: False
   act: relu
@@ -52,7 +52,7 @@ gnn:
   dropout: 0.2
   agg: mean
 optim:
-  batch_accumulation: 32
+  batch_accumulation: 1
   clip_grad_norm: True
   optimizer: adamW
   weight_decay: 1e-5

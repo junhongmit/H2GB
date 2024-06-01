@@ -152,7 +152,9 @@ class CustomLogger(Logger):
             'accuracy': reformat(accuracy_score(true, pred_int)),
             'precision': reformat(precision_score(true, pred_int)),
             'recall': reformat(recall_score(true, pred_int)),
-            'f1': reformat(f1_score(true, pred_int, average='macro')),
+            'f1': reformat(f1_score(true, pred_int)),
+            'macro-f1': reformat(f1_score(true, pred_int, average='macro')),
+            'micro-f1': reformat(f1_score(true, pred_int, average='micro')),
             'auc': reformat(auroc_score),
         }
         if cfg.metric_best == 'accuracy-SBM':
@@ -168,6 +170,8 @@ class CustomLogger(Logger):
             'accuracy': reformat(accuracy_score(true, pred_int)),
             'f1': reformat(f1_score(true, pred_int,
                                     average='macro', zero_division=0)),
+            'micro-f1': reformat(f1_score(true, pred_int,
+                                    average='micro', zero_division=0)),
         }
         if cfg.metric_best == 'accuracy-SBM':
             res['accuracy-SBM'] = reformat(accuracy_SBM(true, pred_int))

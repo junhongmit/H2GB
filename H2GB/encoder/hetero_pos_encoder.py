@@ -101,7 +101,7 @@ class HeteroPENodeEncoder(torch.nn.Module):
         pestat_var = f"pestat_{self.kernel_type}"
         if self.kernel_type in ['Hetero_Metapath', 'Hetero_Node2Vec', 'Hetero_TransE', 'Hetero_ComplEx']:
             if isinstance(batch, HeteroData):
-                pos_enc = {node_type: batch[node_type][pestat_var] for node_type in batch.x_dict}
+                pos_enc = {node_type: batch[node_type][pestat_var] if hasattr(batch[node_type], pestat_var) else None for node_type in batch.node_types}
             else:
                 pos_enc = batch[pestat_var]
         else:
@@ -137,12 +137,13 @@ class HeteroPENodeEncoder(torch.nn.Module):
         # Expand node features if needed
         if isinstance(batch, HeteroData):
             for node_type in batch.x_dict:
-                if self.reshape_x:
-                    h = self.linear_x[node_type](batch.x_dict[node_type])
-                else:
-                    h = batch.x_dict[node_type]
-                # Concatenate final PEs to input embedding
-                batch[node_type].x = torch.cat((h, pos_enc[node_type]), dim=-1)
+                if hasattr(batch[node_type], pestat_var):
+                    if self.reshape_x:
+                        h = self.linear_x[node_type](batch.x_dict[node_type])
+                    else:
+                        h = batch.x_dict[node_type]
+                    # Concatenate final PEs to input embedding
+                    batch[node_type].x = torch.cat((h, pos_enc[node_type]), dim=-1)
         else:
             if self.reshape_x:
                 h = self.linear_x(batch.x)

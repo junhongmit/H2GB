@@ -74,6 +74,7 @@ class SGC(torch.nn.Module):
         if isinstance(batch, HeteroData):
             homo = batch.to_homogeneous()
             x, label, edge_index = homo.x, homo.y, homo.edge_index
+            x = x.nan_to_num()
             node_type_tensor = homo.node_type
             for idx, node_type in enumerate(batch.node_types):
                 if node_type == cfg.dataset.task_entity:

@@ -18,13 +18,14 @@ class GeneralLayer(nn.Module):
                  dim_in,
                  dim_out,
                  has_act=True,
-                 has_bn=False,
+                 has_bn=True,
                  has_ln=True,
                  has_l2norm=False,
                  **kwargs):
         super(GeneralLayer, self).__init__()
         self.has_l2norm = has_l2norm
-        has_bn = has_bn and cfg.gnn.batchnorm
+        has_bn = has_bn and cfg.gnn.batch_norm
+        has_ln = has_ln and cfg.gnn.layer_norm
         self.layer = layer_dict[name](dim_in,
                                       dim_out,
                                       bias=not has_bn,

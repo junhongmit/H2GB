@@ -3,7 +3,7 @@ metric_best: f1
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: IEEE-CIS
@@ -23,7 +23,7 @@ num_workers: 18
 train:
   mode: custom
   sampler: hgt
-  neighbor_sizes: [64, 64, 64] # 64 * 3
+  neighbor_sizes: [64, 64, 64, 64, 64, 64] # 256 * 4
   iter_per_epoch: 256
   batch_size: 32
   eval_period: 4
@@ -38,7 +38,7 @@ val:
 model:
   type: GTModel
   loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 1]
+  loss_fun_weight: [1, 5]
   edge_decoding: dot
   graph_pooling: mean
 gt:
@@ -46,11 +46,11 @@ gt:
   layers_pre_gt: 1
   layers: 3
   layers_post_gt: 1
-  attn_heads: 2
-  dim_hidden: 32  # `gt.dim_hidden` must match `gnn.dim_inner`
+  attn_heads: 8
+  dim_hidden: 64  # `gt.dim_hidden` must match `gnn.dim_inner`
   input_dropout: 0.0
-  dropout: 0.2     # global transformer dropout
-  attn_dropout: 0.0
+  dropout: 0.5     # global transformer dropout
+  attn_dropout: 0.2
   batch_norm: False
   layer_norm: True
   l2_norm: False
@@ -60,7 +60,7 @@ gt:
   ffn: Type
   jumping_knowledge: False
 gnn:
-  dropout: 0.2
+  dropout: 0.5
 optim:
   batch_accumulation: 32
   clip_grad_norm: True

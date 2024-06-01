@@ -3,7 +3,7 @@ metric_best: f1
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: PyG-RCDD
@@ -13,7 +13,7 @@ dataset:
   task_entity: item
   transductive: True
   node_encoder: True
-  node_encoder_name: Hetero_Raw
+  node_encoder_name: Raw
   node_encoder_bn: False
   edge_encoder: False
   edge_encoder_name: none

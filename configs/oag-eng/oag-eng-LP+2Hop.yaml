@@ -4,7 +4,7 @@ seed: 42
 device: cpu
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: PyG-OAG

@@ -319,6 +319,8 @@ class GTModel(torch.nn.Module):
                 if src_type == dst_type:
                     edge_index_dict[edge_type] = torch.cat((edge_index_dict[edge_type], torch.cat((torch.cat(cols, dim=-1), torch.cat(rows, dim=-1)))), dim=-1)
 
+            for node_type in batch.node_types:
+                batch[node_type].num_nodes += self.num_virtual_nodes
 
         # Write back for conv layer
         if isinstance(batch, HeteroData):
@@ -353,6 +355,7 @@ class GTModel(torch.nn.Module):
             # Remove the virtual nodes
             for node_type in batch.node_types:
                 batch[node_type].x = batch[node_type].x[:num_nodes_dict[node_type], :]
+                batch[node_type].num_nodes -= self.num_virtual_nodes
 
         # if self.postfixed_local_model:
         #     h_prev_dict = h_dict

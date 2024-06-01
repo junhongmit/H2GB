@@ -18,17 +18,13 @@ from torch_geometric.data import (HeteroData, InMemoryDataset)
 from ogb.lsc import MAG240MDataset
 from ogb.nodeproppred import PygNodePropPredDataset
 from torch_geometric.datasets import (DBLP, IMDB, OGB_MAG, Planetoid, MovieLens)
-from H2GB.loader.dataset.heterophilic_dataset import SynHeterophilicDataset
-from H2GB.loader.dataset.hgb_dataset import HGBDataset
 from H2GB.loader.dataset.oag_dataset import OAGDataset
 from H2GB.loader.dataset.mag_dataset import MAGDataset
-from H2GB.loader.dataset.igb_dataset import IGBDataset
-from H2GB.loader.dataset.aml_dataset import AMLDataset
 from H2GB.loader.dataset.rcdd_dataset import RCDDDataset
+from H2GB.loader.dataset.pokec_dataset import PokecDataset
 from H2GB.loader.dataset.IeeeFraudDetection_dataset import IeeeFraudDetectionDataset
 from H2GB.loader.dataset.ccf_dataset import CreditCardFraudDetectionDataset
-from H2GB.loader.dataset.coco_superpixels import COCOSuperpixels
-from H2GB.loader.dataset.voc_superpixels import VOCSuperpixels
+from H2GB.loader.dataset.dns_dataset import DNSDataset
 from H2GB.graphgym.config import cfg
 from H2GB.graphgym.loader import load_pyg, load_ogb, set_dataset_attr
 from H2GB.graphgym.register import register_loader
@@ -193,9 +189,6 @@ def load_dataset_master(format, name, dataset_dir):
 
         elif pyg_dataset_id == 'Heterophilic':
             dataset = preformat_Heterophilic(dataset_dir, name)
-
-        elif pyg_dataset_id == 'HGB':
-            dataset = preformat_HGB(dataset_dir, name)
         
         elif pyg_dataset_id == 'OGB_MAG':
             dataset = preformat_OGB_MAG(dataset_dir)
@@ -209,19 +202,17 @@ def load_dataset_master(format, name, dataset_dir):
         elif pyg_dataset_id == 'MovieLens':
             dataset = preformat_MovieLens(dataset_dir)
 
-        elif pyg_dataset_id == 'VOCSuperpixels':
-            dataset = preformat_VOCSuperpixels(dataset_dir, name,
-                                               cfg.dataset.slic_compactness)
-
-        elif pyg_dataset_id == 'COCOSuperpixels':
-            dataset = preformat_COCOSuperpixels(dataset_dir, name,
-                                                cfg.dataset.slic_compactness)
-
         elif pyg_dataset_id == 'RCDD':
             dataset = preformat_RCDD(dataset_dir)
 
         elif pyg_dataset_id == 'CCF':
             dataset = preformat_CCF(dataset_dir)
+
+        elif pyg_dataset_id == 'Pokec':
+            dataset = preformat_Pokec(dataset_dir)
+
+        elif pyg_dataset_id == 'DNS':
+            dataset = preformat_DNS(dataset_dir)
         
         else:
             raise ValueError(f"Unexpected PyG Dataset identifier: {format}")
@@ -249,16 +240,9 @@ def load_dataset_master(format, name, dataset_dir):
 
         else:
             raise ValueError(f"Unsupported OGB(-derived) dataset: {name}")
-    elif format == 'IGB':
-        dataset_dir = osp.join(dataset_dir, 'IGB')
-        dataset = preformat_IGB_Node(dataset_dir, name)
-
-    elif format == 'AML':
-        dataset_dir = osp.join(dataset_dir, format)
-        dataset = preformat_AML(dataset_dir, name)
 
     elif format == 'IEEE-CIS':
-        dataset = preformat_IEEE_CIS(dataset_dir)
+        dataset = preformat_IEEE_CIS(osp.join(dataset_dir, 'IEEE-CIS'))
     else:
         raise ValueError(f"Unknown data format: {format}")
 
@@ -268,14 +252,14 @@ def load_dataset_master(format, name, dataset_dir):
 
     # Precompute structural encodings
     if cfg.posenc_Hetero_Node2Vec.enable:
-        pe_dir = osp.join(dataset_dir, name, 'posenc')
+        pe_dir = osp.join(dataset_dir, name.replace('-', '_'), 'posenc')
         if not osp.exists(pe_dir) or not check_Node2Vec(pe_dir):
             preprocess_Node2Vec(pe_dir, dataset)
         
         model = load_Node2Vec(pe_dir)
         if len(dataset) == 1:
-            homo_data = dataset[0].to_homogeneous()
-            for idx, node_type in enumerate(dataset.data.num_nodes_dict):
+            homo_data = dataset.data.to_homogeneous()
+            for idx, node_type in enumerate(dataset.data.node_types):
                 mask = homo_data.node_type == idx
                 dataset.data[node_type]['pestat_Hetero_Node2Vec'] = model[mask]
         else:
@@ -303,13 +287,14 @@ def load_dataset_master(format, name, dataset_dir):
             data_list = []
             for split in range(3):
                 data = dataset[split]
-                for node_type in dataset.data.num_nodes_dict:
+                for node_type in dataset.data.node_types:
                     data[node_type]['pestat_Hetero_Metapath'] = \
                         emb[model['start'][node_type]:model['end'][node_type]]
                 data_list.append(data)
             dataset._data, dataset.slices = dataset.collate(data_list)
         else:
-            for node_type in dataset.data.num_nodes_dict:
+            for node_type in dataset.data.node_types:
+                # if hasattr(dataset.data[node_type], 'x'):
                 dataset.data[node_type]['pestat_Hetero_Metapath'] = \
                     emb[model['start'][node_type]:model['end'][node_type]]
         print(dataset.data)
@@ -594,27 +579,7 @@ def preformat_Heterophilic(dataset_dir, name):
         data['patent'].val_mask = index_to_mask(val_idx, size=data['patent'].y.shape[0])
         data['patent'].test_mask = index_to_mask(test_idx, size=data['patent'].y.shape[0])
         dataset.data = data
-    elif name.split('+')[0] in ['cora', 'products']:
-        dataset = SynHeterophilicDataset(root=dataset_dir, name=name.split('+')[0], homophily=name.split('+')[1],)
-                                        # transform=T.NormalizeFeatures())
         
-    return dataset
-
-
-def preformat_HGB(dataset_dir, name):
-    """Load and preformat HGB datasets.
-
-    Args:
-        dataset_dir: path where to store the cached dataset
-
-    Returns:
-        PyG dataset object
-    """
-    dataset = HGBDataset(root=dataset_dir, name=name)
-    if name == 'imdb':
-        emb = torch.nn.Embedding(dataset[0]['keyword'].num_nodes, 256)
-        dataset.data.emb = emb
-        dataset.data['keyword'].x = emb.weight
     return dataset
 
 
@@ -645,6 +610,19 @@ def preformat_OAG(dataset_dir, name):
     """
     transform = T.ToUndirected(merge=True)
     dataset = OAGDataset(root=dataset_dir, name=name, transform=transform)
+    if cfg.dataset.rand_split:
+        data = dataset.data
+        total = (data['paper'].train_mask.sum() + data['paper'].val_mask.sum() + data['paper'].test_mask.sum()).item()
+        train_size = data['paper'].train_mask.sum().item() / total
+        valid_size= data['paper'].val_mask.sum().item() / (total - data['paper'].train_mask.sum().item())
+        print(train_size, valid_size)
+        train_paper, temp_paper = train_test_split(torch.where(data['paper'].y != -1)[0], train_size=train_size)
+        valid_paper, test_paper = train_test_split(temp_paper, train_size=valid_size)
+        data['paper'].train_mask = index_to_mask(train_paper, size=data.num_nodes_dict['paper'])
+        data['paper'].val_mask = index_to_mask(valid_paper, size=data.num_nodes_dict['paper'])
+        data['paper'].test_mask = index_to_mask(test_paper, size=data.num_nodes_dict['paper'])
+    # data = dataset.data
+    # data[('paper', 'PAP', 'paper')].adj_t = (data[('paper', 'rev_AP_write_first', 'author')].adj_t.t() @  data[('author', 'AP_write_first', 'paper')].adj_t.t()).t()
     return dataset
 
 
@@ -690,40 +668,6 @@ def preformat_MovieLens(dataset_dir):
     return dataset
 
 
-def preformat_VOCSuperpixels(dataset_dir, name, slic_compactness):
-    """Load and preformat VOCSuperpixels dataset.
-
-    Args:
-        dataset_dir: path where to store the cached dataset
-    Returns:
-        PyG dataset object
-    """
-    dataset = join_dataset_splits(
-        [VOCSuperpixels(root=dataset_dir, name=name,
-                        slic_compactness=slic_compactness,
-                        split=split)
-         for split in ['train', 'val', 'test']]
-    )
-    return dataset
-
-
-def preformat_COCOSuperpixels(dataset_dir, name, slic_compactness):
-    """Load and preformat COCOSuperpixels dataset.
-
-    Args:
-        dataset_dir: path where to store the cached dataset
-    Returns:
-        PyG dataset object
-    """
-    dataset = join_dataset_splits(
-        [COCOSuperpixels(root=dataset_dir, name=name,
-                         slic_compactness=slic_compactness,
-                         split=split)
-         for split in ['train', 'val', 'test']]
-    )
-    return dataset
-
-
 def preformat_RCDD(dataset_dir):
     """Load and preformat RCDD datasets.
 
@@ -752,6 +696,50 @@ def preformat_CCF(dataset_dir):
     dataset = CreditCardFraudDetectionDataset(root=dataset_dir, transform=transform)
     return dataset
 
+
+def preformat_Pokec(dataset_dir):
+    """Load and preformat Pokec datasets.
+
+    Args:
+        dataset_dir: path where to store the cached dataset
+
+    Returns:
+        PyG dataset object
+    """
+    # transform = T.Compose([T.ToUndirected(), T.AddSelfLoops(), T.NormalizeFeatures()])
+    transform = T.ToUndirected()
+    dataset = PokecDataset(root=dataset_dir, transform=transform)
+    dataset.name = 'Pokec'
+    if cfg.dataset.rand_split:
+        data = dataset.data
+        indices = torch.where(data['user'].y != -1)[0]
+        train_size = 0.5 # 50% train
+        val_size = 0.5 # 25% val, 25% test
+        train_idx, temp_idx = train_test_split(indices, train_size=train_size)
+        val_idx, test_idx = train_test_split(temp_idx, train_size=val_size)
+        train_mask = index_to_mask(train_idx, data['user'].num_nodes)
+        val_mask = index_to_mask(val_idx, data['user'].num_nodes)
+        test_mask = index_to_mask(test_idx, data['user'].num_nodes)
+        data['user'].train_mask = train_mask
+        data['user'].val_mask = val_mask
+        data['user'].test_mask = test_mask
+    return dataset
+
+
+def preformat_DNS(dataset_dir):
+    """Load and preformat DNS datasets.
+
+    Args:
+        dataset_dir: path where to store the cached dataset
+
+    Returns:
+        PyG dataset object
+    """
+    transform = T.ToUndirected()
+    start, end = 0, 60
+    dataset = DNSDataset(root=dataset_dir, start=start, end=end,
+                         domain_file='domains2.csv', transform=transform)
+    return dataset
 
 
 def preformat_OGB_Node(dataset_dir, name):
@@ -1038,37 +1026,6 @@ def preformat_OGB_Node(dataset_dir, name):
     return dataset
 
 
-def preformat_IGB_Node(dataset_dir, name):
-    """Load and preformat IGB datasets.
-
-    Args:
-        dataset_dir: path where to store the cached dataset
-
-    Returns:
-        PyG dataset object
-    """
-    transform = T.ToUndirected(merge=True)
-    classes = 19
-    if '-' in name:
-        name, classes = name.split('-')
-    dataset = IGBDataset(root=dataset_dir, name=name, classes=classes, transform=transform)
-    return dataset
-
-
-def preformat_AML(dataset_dir, name):
-    """Load and preformat custom Anti-money Laundering datasets.
-
-    Args:
-        dataset_dir: path where to store the cached dataset
-        name: name of the specific AML dataset
-
-    Returns:
-        PyG dataset object
-    """
-    # transform = T.ToUndirected(merge=True)
-    dataset = AMLDataset(root=dataset_dir, name=name)
-    return dataset
-
 def preformat_IEEE_CIS(dataset_dir):
     """Load and preformat custom IEEE-CIS datasets.
 
@@ -1080,7 +1037,8 @@ def preformat_IEEE_CIS(dataset_dir):
     """
     # transform = T.ToUndirected(merge=True)
     transform = T.Compose([T.ToUndirected(), T.AddSelfLoops(), T.NormalizeFeatures()])
-    dataset = IeeeFraudDetectionDataset(root='/nobackup/users/junhong/Data/IEEE-CIS', transform=transform)
+    dataset = IeeeFraudDetectionDataset(root=dataset_dir, transform=transform)
+    dataset.name = 'IEEE-CIS'
     data = dataset.data
     num_nodes_train = int(0.8 * data["transaction"].num_nodes)
     num_nodes_val = int(0.1 * data["transaction"].num_nodes)

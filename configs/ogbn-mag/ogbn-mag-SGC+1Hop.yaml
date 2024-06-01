@@ -4,7 +4,7 @@ seed: 42
 device: cpu
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: OGB
@@ -14,12 +14,11 @@ dataset:
   task_entity: paper
   transductive: True
   node_encoder: True
-  node_encoder_name: Hetero_Raw
+  node_encoder_name: Raw
   node_encoder_bn: False
   edge_encoder: False
   edge_encoder_name: none
   edge_encoder_bn: False
-  rand_split: True
 num_threads: 24
 num_workers: 18
 train:
@@ -40,7 +39,7 @@ model:
 gnn:
   alpha: 0.1
   hops: 1
-  dim_inner: 256
+  dim_inner: 512
 optim:
   clip_grad_norm: True
   optimizer: adamW

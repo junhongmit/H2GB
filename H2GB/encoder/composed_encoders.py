@@ -4,10 +4,12 @@ from torch_geometric.data import HeteroData
 from H2GB.graphgym.config import cfg
 from H2GB.graphgym.register import register_node_encoder
 
+from H2GB.encoder.raw_encoder import (RawNodeEncoder, RawEdgeEncoder)
 from H2GB.encoder.hetero_raw_encoder import (HeteroRawNodeEncoder, HeteroRawEdgeEncoder)
 from H2GB.encoder.voc_superpixels_encoder import VOCNodeEncoder
 
 from H2GB.encoder.laplace_pos_encoder import LapPENodeEncoder
+from H2GB.encoder.homo_gnn_encoder import HomoGNNEncoder
 from H2GB.encoder.hetero_gnn_encoder import HeteroGNNEncoder
 from H2GB.encoder.hetero_label_encoder import HeteroLabelNodeEncoder
 from H2GB.encoder.hetero_pos_encoder import (RWSENodeEncoder, Node2VecNodeEncoder, \
@@ -128,11 +130,13 @@ def concat_node_encoders(encoder_classes, pe_enc_names):
 
 
 # Dataset-specific node encoders.
-ds_encs = {'Hetero_Raw': HeteroRawNodeEncoder,
+ds_encs = {'Raw': RawNodeEncoder,
+           'Hetero_Raw': HeteroRawNodeEncoder,
            'VOCNode': VOCNodeEncoder,}
 
 # Positional Encoding node encoders.
 pe_encs = {'LapPE': LapPENodeEncoder,
+           'Homo_GNN': HomoGNNEncoder,
            'Hetero_RWSE': RWSENodeEncoder,
            'Hetero_Label': HeteroLabelNodeEncoder,
            'Hetero_Node2Vec': Node2VecNodeEncoder,
@@ -168,6 +172,13 @@ for ds_enc_name, ds_enc_cls in ds_encs.items():
         f"{ds_enc_name}+Hetero_Label+Hetero_Metapath",
         concat_node_encoders([ds_enc_cls, HeteroLabelNodeEncoder, MetapathNodeEncoder],
                              ['Hetero_Label', 'Hetero_Metapath'])
+    )
+
+for ds_enc_name, ds_enc_cls in ds_encs.items():
+    register_node_encoder(
+        f"{ds_enc_name}+Hetero_Label+Hetero_Node2Vec",
+        concat_node_encoders([ds_enc_cls, HeteroLabelNodeEncoder, Node2VecNodeEncoder],
+                             ['Hetero_Label', 'Hetero_Node2Vec'])
     )
 
 # # Combine both LapPE and RWSE positional encodings.

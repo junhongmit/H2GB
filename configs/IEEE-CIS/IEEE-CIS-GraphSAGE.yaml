@@ -1,9 +1,9 @@
 out_dir: /nobackup/users/junhong/Logs/results
-metric_best: accuracy
+metric_best: f1
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: IEEE-CIS
@@ -13,7 +13,7 @@ dataset:
   task_entity: transaction
   transductive: True
   node_encoder: True
-  node_encoder_name: Hetero_Raw
+  node_encoder_name: Raw
   node_encoder_bn: False
   edge_encoder: False
   edge_encoder_name: none
@@ -22,8 +22,8 @@ num_threads: 24
 num_workers: 18
 train:
   mode: custom
-  sampler: hetero_neighbor
-  neighbor_sizes: [11, 4] #[128, 128, 128, 128] # 128 * 4
+  sampler: hgt
+  neighbor_sizes: [64, 64, 64, 64, 64, 64] # 256 * 6
   iter_per_epoch: 256
   batch_size: 32
   eval_period: 4
@@ -43,7 +43,7 @@ model:
   graph_pooling: mean
 gnn:
   layer_type: GraphSAGE
-  layers_mp: 2
+  layers_mp: 3
   layers_pre_mp: 0
   layers_post_mp: 1  # Not used when `gnn.head: san_graph`
   dim_inner: 128  # `gt.dim_hidden` must match `gnn.dim_inner`
@@ -51,7 +51,7 @@ gnn:
   layer_norm: False
   act: relu
   input_dropout: 0.0
-  dropout: 0.2
+  dropout: 0.5
   agg: mean
 optim:
   batch_accumulation: 32

@@ -3,7 +3,7 @@ metric_best: f1
 seed: 42
 wandb:
   use: True
-  project: H2GB
+  project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
   format: PyG-RCDD
@@ -37,8 +37,7 @@ val:
   tqdm: True
 model:
   type: HeteroGNNModel
-  loss_fun: weighted_cross_entropy
-  loss_fun_weight: [1, 1] # Shut off the auto class weight
+  loss_fun: cross_entropy
   edge_decoding: dot
   graph_pooling: mean
 gnn:

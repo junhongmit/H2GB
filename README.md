@@ -1,4 +1,6 @@
-![H2GB logo](imgs/logo_small.png)
+<p align="center">
+  <img src="imgs/logo_small.png" width="30%" height="auto"/>
+</p>
 
 **Heterophilic and Heterogeneous Graph Benchmark** (NeurIPS 2024 Datasets and Benchmarks Track)
 <h4>

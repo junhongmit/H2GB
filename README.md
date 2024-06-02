@@ -2,13 +2,22 @@
   <img src="imgs/logo_small.png" width="30%" height="auto"/>
 </p>
 
-**Heterophilic and Heterogeneous Graph Benchmark** (NeurIPS 2024 Datasets and Benchmarks Track)
-<h4>
-	<a href="https://arxiv.org/abs/2307.01026"><img src="https://img.shields.io/badge/arXiv-pdf-yellowgreen"></a>
+<p align="center">
+	<a href=""><img src="https://img.shields.io/badge/arXiv-pdf-yellowgreen"></a>
 	<a href="https://pypi.org/project/py-tgb/"><img src="https://img.shields.io/pypi/v/py-tgb.svg?color=brightgreen"></a>
-	<a href="https://tgb.complexdatalab.com/"><img src="https://img.shields.io/badge/website-blue"></a>
+	<a href="https://github.com/junhongmit/H2GB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
 	<a href="https://docs.tgb.complexdatalab.com/"><img src="https://img.shields.io/badge/docs-orange"></a>
-</h4> 
+</p>
+
+--------------------------------------------------------------------------------
+
+## Overview
+The Heterophilic and Heterogeneous Graph Benchmark (H$`^2`$GB) is a collection of graph benchmark datasets, data loaders, modular graph transformer framework (UnifiedGT) and evaluators for graph learning.
+The H$`^2`$GB encompasses 9 diverse real-world datasets across 5 domains. Its data loaders are fully compatible with popular graph deep learning framework [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/). They provide automatic dataset downloading, standardized dataset splits, and unified performance evaluation.
+
+<p align='center'>
+  <img src="imgs/flowchart.png" width="80%" height="auto"/>
+</p>
 
 ## Environment Setup
 You can create a conda environment to easily run the code. For example, we can create a virtual environment named `H2GB`:

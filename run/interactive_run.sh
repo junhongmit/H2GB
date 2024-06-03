@@ -332,7 +332,7 @@ DATASET="mag-year"
 # run_repeats ${DATASET} SGC+2Hop           "name_tag SGC+2Hop"
 
 # Homogeneous GNN Baselines
-# run_repeats ${DATASET} GCN                "name_tag GCN"
+run_repeats ${DATASET} GCN                "name_tag GCN"
 # run_repeats ${DATASET} GCN+LP                "name_tag GCN+LP"
 # run_repeats ${DATASET} GCN+MS                "name_tag GCN+MS"
 # run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
@@ -388,7 +388,7 @@ DATASET="RCDD"
 # run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"
 # run_repeats ${DATASET} LP+2Hop            "name_tag LP+2Hop"
 # run_repeats ${DATASET} SGC+1Hop           "name_tag SGC+1Hop"
-run_repeats ${DATASET} SGC+2Hop           "name_tag SGC+2Hop seed 46"
+# run_repeats ${DATASET} SGC+2Hop           "name_tag SGC+2Hop seed 46"
 
 # Homogeneous GNN Baselines
 # run_repeats ${DATASET} GCN                "name_tag GCN"

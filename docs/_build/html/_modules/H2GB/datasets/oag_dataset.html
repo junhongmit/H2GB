@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H2GB.datasets.oag_dataset &mdash; H2GB 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/mytheme.css" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/js/version_alert.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Install H²GB</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install/installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/introduction.html">Introduction by Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/datasets.html">H2GB.datasets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">H2GB</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">H2GB.datasets.oag_dataset</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for H2GB.datasets.oag_dataset</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HeteroData</span><span class="p">,</span>
+    <span class="n">InMemoryDataset</span><span class="p">,</span>
+    <span class="n">download_url</span><span class="p">,</span>
+    <span class="n">extract_zip</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">dill</span>
+<span class="k">class</span> <span class="nc">RenameUnpickler</span><span class="p">(</span><span class="n">dill</span><span class="o">.</span><span class="n">Unpickler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">find_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="n">renamed_module</span> <span class="o">=</span> <span class="n">module</span>
+        <span class="k">if</span> <span class="n">module</span> <span class="o">==</span> <span class="s2">&quot;pyHGT.data&quot;</span> <span class="ow">or</span> <span class="n">module</span> <span class="o">==</span> <span class="s1">&#39;data&#39;</span><span class="p">:</span>
+            <span class="n">renamed_module</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;GPT_GNN.data&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">RenameUnpickler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">find_class</span><span class="p">(</span><span class="n">renamed_module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">renamed_load</span><span class="p">(</span><span class="n">file_obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">RenameUnpickler</span><span class="p">(</span><span class="n">file_obj</span><span class="p">)</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+<span class="c1"># To prepare the dataset, this piece of code need to be run under GPT-GNN&#39;s repo</span>
+<div class="viewcode-block" id="OAGDataset"><a class="viewcode-back" href="../../../generated/H2GB.datasets.OAGDataset.html#H2GB.datasets.OAGDataset">[docs]</a><span class="k">class</span> <span class="nc">OAGDataset</span><span class="p">(</span><span class="n">InMemoryDataset</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;A variety of new heterogeneous graph benchmark datasets composed</span>
+<span class="sd">    of subsets of Open Academic Graph (OAG) from `&quot;OAG: Toward Linking</span>
+<span class="sd">    Large-scale Heterogeneous Entity Graphs&quot; &lt;https://dl.acm.org/doi/10.1145/3292500.3330785&gt;`_</span>
+<span class="sd">    paper. Each of the datasets contains papers from three different subject</span>
+<span class="sd">    domains -- computer science (:obj:`oag-cs`), engineering (:obj:`oag-eng`),</span>
+<span class="sd">    and chemistry (:obj:`oag-chem`). These datasets contain four types of</span>
+<span class="sd">    entities -- papers, authors, institutions, and field of study. </span>
+<span class="sd">    Each paper is associated with a 768-dimensional feature vector generated</span>
+<span class="sd">    from a pre-trained XLNet applying on the paper titles. The representation</span>
+<span class="sd">    of each word in the title are weighted by each word&#39;s attention to get</span>
+<span class="sd">    the title representation for each paper. Each paper node is labeled with</span>
+<span class="sd">    its published venue (paper or conference).</span>
+<span class="sd">    </span>
+<span class="sd">    We split the papers published up to 2016 as the training set, papers</span>
+<span class="sd">    published in 2017 as the validation set, and papers published in 2018 and</span>
+<span class="sd">    2019 as the test set. The publication year of each paper is also included</span>
+<span class="sd">    in these datasets.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        root (str): Root directory where the dataset should be saved.</span>
+<span class="sd">        name (str): The name of the dataset (one of :obj:`&quot;ogbn-mag&quot;`,</span>
+<span class="sd">            :obj:`&quot;mag-year&quot;`)</span>
+<span class="sd">        rand_split (bool, optional): Whether to randomly re-split the dataset.</span>
+<span class="sd">            This option is only applicable to :obj:`mag-year`.</span>
+<span class="sd">            (default: :obj:`False`)</span>
+<span class="sd">        transform (callable, optional): A function/transform that takes in an</span>
+<span class="sd">            :obj:`torch_geometric.data.HeteroData` object and returns a</span>
+<span class="sd">            transformed version. The data object will be transformed before</span>
+<span class="sd">            every access. (default: :obj:`None`)</span>
+<span class="sd">        pre_transform (callable, optional): A function/transform that takes in</span>
+<span class="sd">            an :obj:`torch_geometric.data.HeteroData` object and returns a</span>
+<span class="sd">            transformed version. The data object will be transformed before</span>
+<span class="sd">            being saved to disk. (default: :obj:`None`)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">names</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;art&#39;</span><span class="p">:</span> <span class="s1">&#39;Art&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;business&#39;</span><span class="p">:</span> <span class="s1">&#39;Business&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;chemistry&#39;</span><span class="p">:</span> <span class="s1">&#39;Chemistry&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;cs&#39;</span><span class="p">:</span> <span class="s1">&#39;CS_20190919&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;engineering&#39;</span><span class="p">:</span> <span class="s1">&#39;Engineering&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;material&#39;</span><span class="p">:</span> <span class="s1">&#39;Materials_science&#39;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                 <span class="n">transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">pre_transform</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">pre_transform</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">slices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">processed_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">raw_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;raw&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">processed_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;processed&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">raw_file_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;graph_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s1">.pt&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">processed_file_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;data.pt&#39;</span>
+
+    <span class="c1"># def download(self):</span>
+    <span class="c1">#     url = self.urls[self.name]</span>
+    <span class="c1">#     path = download_url(url, self.raw_dir)</span>
+    <span class="c1">#     extract_zip(path, self.raw_dir)</span>
+    <span class="c1">#     os.unlink(path)</span>
+
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">graph</span> <span class="o">=</span> <span class="n">renamed_load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;/nobackup/users/junhong/Data/preprocessed_OAG/graph_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s1">.pk&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="n">HeteroData</span><span class="p">()</span>
+
+        <span class="c1"># Add nodes</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">node_type</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node_forward</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">node_type</span> <span class="o">==</span> <span class="s1">&#39;venue&#39;</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node_feature</span><span class="p">[</span><span class="n">node_type</span><span class="p">][</span><span class="s1">&#39;emb&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">year</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node_feature</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">][</span><span class="s1">&#39;time&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">())</span>
+
+        <span class="c1"># Add edges</span>
+        <span class="k">for</span> <span class="n">tar</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_list</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_list</span><span class="p">[</span><span class="n">tar</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">rel</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_list</span><span class="p">[</span><span class="n">tar</span><span class="p">][</span><span class="n">src</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">rel_name</span> <span class="o">=</span> <span class="n">rel</span>
+                    <span class="k">if</span> <span class="n">rel</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;rev_&#39;</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="s1">&#39;paper&#39;</span> <span class="ow">and</span> <span class="n">tar</span> <span class="o">==</span> <span class="s1">&#39;venue&#39;</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="c1"># if src == &#39;author&#39; and tar == &#39;paper&#39;:</span>
+                    <span class="c1">#     rel_name = &#39;AP_write&#39;</span>
+                    <span class="c1"># Only keep L2 field connections</span>
+                    <span class="c1"># if src == &#39;paper&#39; and tar == &#39;field&#39; and rel != &#39;PF_in_L2&#39;:</span>
+                    <span class="c1">#     continue</span>
+                        <span class="c1"># rel_name = &#39;PF_in&#39;</span>
+                    <span class="nb">print</span><span class="p">((</span><span class="n">src</span><span class="p">,</span> <span class="n">rel_name</span><span class="p">,</span> <span class="n">tar</span><span class="p">))</span>
+                    <span class="n">total_edges</span><span class="p">,</span> <span class="n">cur_edges</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">tar_id</span><span class="p">,</span> <span class="n">items</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_list</span><span class="p">[</span><span class="n">tar</span><span class="p">][</span><span class="n">src</span><span class="p">][</span><span class="n">rel</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="n">total_edges</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+                    <span class="n">edge_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">total_edges</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">tar_id</span><span class="p">,</span> <span class="n">src_ids</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_list</span><span class="p">[</span><span class="n">tar</span><span class="p">][</span><span class="n">src</span><span class="p">][</span><span class="n">rel</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">src_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">src_ids</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                            <span class="n">edge_index</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">idx</span> <span class="o">+</span> <span class="n">cur_edges</span><span class="p">]</span> <span class="o">=</span> <span class="n">src_id</span>
+                            <span class="n">edge_index</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">idx</span> <span class="o">+</span> <span class="n">cur_edges</span><span class="p">]</span> <span class="o">=</span> <span class="n">tar_id</span>
+                        <span class="n">cur_edges</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">src_ids</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">rel_name</span><span class="p">,</span> <span class="n">tar</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">edge_types</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[(</span><span class="n">src</span><span class="p">,</span> <span class="n">rel_name</span><span class="p">,</span> <span class="n">tar</span><span class="p">)]</span><span class="o">.</span><span class="n">edge_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">data</span><span class="p">[(</span><span class="n">src</span><span class="p">,</span> <span class="n">rel_name</span><span class="p">,</span> <span class="n">tar</span><span class="p">)]</span><span class="o">.</span><span class="n">edge_index</span><span class="p">,</span> <span class="n">edge_index</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span><span class="p">[(</span><span class="n">src</span><span class="p">,</span> <span class="n">rel_name</span><span class="p">,</span> <span class="n">tar</span><span class="p">)]</span><span class="o">.</span><span class="n">edge_index</span> <span class="o">=</span> <span class="n">edge_index</span>
+                        
+        <span class="c1"># Add label</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="s1">&#39;paper&#39;</span>
+        <span class="n">tar</span> <span class="o">=</span> <span class="s1">&#39;venue&#39;</span>
+        <span class="n">rel</span> <span class="o">=</span> <span class="s1">&#39;PV_Journal&#39;</span> <span class="c1"># The classification domain is Jounrnal paper</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="o">.</span><span class="n">node_forward</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># for rel in graph.edge_list[tar][src].keys():</span>
+        <span class="n">graph</span><span class="o">.</span><span class="n">edge_list</span><span class="p">[</span><span class="n">tar</span><span class="p">][</span><span class="n">src</span><span class="p">][</span><span class="n">rel</span><span class="p">]</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">count_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">tar_id</span><span class="p">,</span> <span class="n">src_ids</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">edge_list</span><span class="p">[</span><span class="n">tar</span><span class="p">][</span><span class="n">src</span><span class="p">][</span><span class="n">rel</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">src_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">src_ids</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">count_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">tar_id</span><span class="p">,</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">count_dict</span><span class="p">[</span><span class="n">tar_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+                <span class="n">y</span><span class="p">[</span><span class="n">src_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">train_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">year</span> <span class="o">&lt;=</span> <span class="mi">2016</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">val_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">year</span> <span class="o">&gt;=</span> <span class="mi">2017</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">year</span> <span class="o">&lt;=</span> <span class="mi">2017</span><span class="p">))</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">test_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;paper&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">year</span> <span class="o">&gt;=</span> <span class="mi">2018</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">collate</span><span class="p">([</span><span class="n">data</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span><span class="si">}</span><span class="s1">()&#39;</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, H2GB Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

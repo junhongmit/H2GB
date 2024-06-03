@@ -7,7 +7,7 @@ wandb:
   project: unifiedGT
 dataset:
   dir: /nobackup/users/junhong/Data
-  format: OGB
+  format: PyG-ogbn-mag
   name: ogbn-mag
   task: hetero_node
   task_type: classification

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H2GB.datasets.pokec_dataset &mdash; H2GB 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/mytheme.css" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/js/version_alert.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Install H²GB</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install/installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/introduction.html">Introduction by Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/datasets.html">H2GB.datasets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">H2GB</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">H2GB.datasets.pokec_dataset</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for H2GB.datasets.pokec_dataset</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">HeteroData</span><span class="p">,</span> <span class="n">InMemoryDataset</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.utils</span> <span class="kn">import</span> <span class="n">index_to_mask</span>
+
+<span class="k">def</span> <span class="nf">get_categorical_features</span><span class="p">(</span><span class="n">feat_df</span><span class="p">,</span> <span class="n">cat_cols</span><span class="p">):</span>
+    <span class="n">one_hot_encoded_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">feat_df</span><span class="p">[</span><span class="n">cat_cols</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="n">cat_cols</span><span class="p">)</span>
+    <span class="n">cat_features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">one_hot_encoded_df</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">cat_features</span>
+
+<span class="k">def</span> <span class="nf">get_numerical_features</span><span class="p">(</span><span class="n">feat_df</span><span class="p">,</span> <span class="n">num_cols</span><span class="p">):</span>
+    <span class="n">feat_df</span><span class="p">[</span><span class="n">num_cols</span><span class="p">]</span> <span class="o">=</span> <span class="n">feat_df</span><span class="p">[</span><span class="n">num_cols</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">num_feats</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">feat_df</span><span class="p">[</span><span class="n">num_cols</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">num_feats</span>
+
+<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">feature_matrix</span><span class="p">):</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">feature_matrix</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">stdev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">feature_matrix</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">/</span><span class="n">feature_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1e-9</span>
+    <span class="k">return</span> <span class="n">mean</span><span class="p">,</span> <span class="n">stdev</span><span class="p">,</span> <span class="p">(</span><span class="n">feature_matrix</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="n">stdev</span>
+
+<span class="k">def</span> <span class="nf">extract_ids</span><span class="p">(</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">html_data</span><span class="p">):</span>
+    <span class="n">hrefs</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;href=&quot;/klub/([^&quot;]+)&quot;&#39;</span><span class="p">,</span> <span class="n">html_data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">entry_dict</span><span class="p">[</span><span class="n">entry_name</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">hrefs</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">entry_dict</span><span class="p">[</span><span class="n">entry_name</span><span class="p">]]</span>
+
+<div class="viewcode-block" id="PokecDataset"><a class="viewcode-back" href="../../../generated/H2GB.datasets.PokecDataset.html#H2GB.datasets.PokecDataset">[docs]</a><span class="k">class</span> <span class="nc">PokecDataset</span><span class="p">(</span><span class="n">InMemoryDataset</span><span class="p">):</span>
+    
+
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    
+    <span class="n">node_fields</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;public&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;completion_percentage&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;gender&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;region&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;last_login&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;registration&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;AGE&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;body&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_am_working_in_field&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;spoken_languages&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hobbies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_most_enjoy_good_food&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pets&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;body_type&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my_eyesight&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;eye_color&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hair_color&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hair_type&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;completed_level_of_education&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;favourite_color&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relation_to_smoking&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relation_to_alcohol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sign_in_zodiac&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;on_pokec_i_am_looking_for&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;love_is_for_me&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relation_to_casual_sex&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my_partner_should_be&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;marital_status&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;children&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relation_to_children&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_movies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_watching_movie&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_music&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_mostly_like_listening_to_music&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;the_idea_of_good_evening&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_specialties_from_kitchen&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;fun&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_am_going_to_concerts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my_active_sports&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my_passive_sports&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;profession&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_books&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;life_style&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;music&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;politics&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relationships&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;art_culture&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hobbies_interests&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;science_technologies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;computers_internet&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;education&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sport&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;movies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;travelling&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;health&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;companies_brands&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;more&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&quot;</span>
+    <span class="p">]</span>
+    
+    <span class="n">node_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_am_working_in_field&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;spoken_languages&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hobbies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_most_enjoy_good_food&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;pets&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;body_type&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my_eyesight&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;eye_color&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hair_color&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hair_type&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;completed_level_of_education&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;favourite_color&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relation_to_smoking&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relation_to_alcohol&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sign_in_zodiac&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;on_pokec_i_am_looking_for&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;love_is_for_me&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relation_to_casual_sex&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my_partner_should_be&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;marital_status&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;children&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relation_to_children&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_movies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_watching_movie&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_music&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_mostly_like_listening_to_music&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;the_idea_of_good_evening&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_specialties_from_kitchen&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;fun&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_am_going_to_concerts&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my_active_sports&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;my_passive_sports&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;profession&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;I_like_books&quot;</span>
+    <span class="p">]</span>
+    
+    <span class="n">edge_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;life_style&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;music&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;cars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;politics&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;relationships&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;art_culture&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;hobbies_interests&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;science_technologies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;computers_internet&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;education&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sport&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;movies&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;travelling&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;health&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;companies_brands&quot;</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">root</span><span class="p">,</span>
+        <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">pre_transform</span><span class="p">,</span> <span class="n">pre_filter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">processed_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">raw_file_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;soc-pokec-profiles.txt.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;soc-pokec-relationships.txt.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;embedding.pt&quot;</span><span class="p">,</span> <span class="s2">&quot;emb_items.pt&quot;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">processed_file_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;data.pt&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Dataset not found. Please download </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_file_names</span><span class="si">}</span><span class="s2"> from &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&#39; and move it to &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_dir</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dfn</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_fields</span><span class="p">,</span> <span class="n">nrows</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">dfe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_paths</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">],</span> <span class="n">nrows</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">dfn</span> <span class="o">=</span> <span class="n">dfn</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">time_field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;registration&#39;</span><span class="p">,</span> <span class="s1">&#39;last_login&#39;</span><span class="p">]:</span>
+            <span class="n">dfn</span><span class="p">[</span><span class="n">time_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">dfn</span><span class="p">[</span><span class="n">time_field</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
+            <span class="n">fallback_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2000-01-01 00:00:00.0&#39;</span><span class="p">)</span>
+            <span class="n">dfn</span><span class="p">[</span><span class="n">time_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">dfn</span><span class="p">[</span><span class="n">time_field</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">fallback_date</span><span class="p">)</span>
+            <span class="n">dfn</span><span class="p">[</span><span class="n">time_field</span><span class="p">]</span> <span class="o">=</span> <span class="n">dfn</span><span class="p">[</span><span class="n">time_field</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int64&#39;</span><span class="p">)</span> <span class="o">//</span> <span class="mi">10</span><span class="o">**</span><span class="mi">9</span>
+        <span class="n">dfn</span><span class="p">[</span><span class="s1">&#39;AGE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dfn</span><span class="p">[</span><span class="s1">&#39;AGE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span>
+        <span class="n">dfn</span><span class="p">[</span><span class="s1">&#39;main_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dfn</span><span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">dfn</span><span class="p">[</span><span class="s1">&#39;main_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dfn</span><span class="p">[</span><span class="s1">&#39;main_area&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
+        
+        <span class="n">entry_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_features</span><span class="p">:</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="n">dfn</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+            <span class="n">entry_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="n">line</span><span class="p">:</span> <span class="c1"># Check for nan</span>
+                    <span class="n">hrefs</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;href=&quot;/klub/([^&quot;]+)&quot;&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                    <span class="n">entry_set</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="n">hrefs</span><span class="p">)</span>
+            <span class="n">entry_dict</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">entry</span><span class="p">:</span> <span class="n">idx</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">entry_set</span><span class="p">)}</span>
+
+        <span class="n">edge_index_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">edge_features</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Processing </span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s1"> ...&#39;</span><span class="p">)</span>
+            <span class="n">edge_index</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">users_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tqdm</span><span class="p">(</span><span class="n">dfn</span><span class="p">[</span><span class="n">column</span><span class="p">])):</span>
+                <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="n">line</span><span class="p">:</span> <span class="c1"># Check for nan</span>
+                    <span class="n">ids</span> <span class="o">=</span> <span class="n">extract_ids</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+                    <span class="n">users_data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">idx</span><span class="p">,</span> <span class="n">ids</span><span class="p">))</span>
+
+            <span class="n">user_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">user_id</span> <span class="k">for</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">movie_ids</span> <span class="ow">in</span> <span class="n">users_data</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">movie_ids</span><span class="p">))]</span>
+            <span class="n">movie_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">movie_id</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">movie_ids</span> <span class="ow">in</span> <span class="n">users_data</span> <span class="k">for</span> <span class="n">movie_id</span> <span class="ow">in</span> <span class="n">movie_ids</span><span class="p">]</span>
+
+            <span class="c1"># Convert lists to tensor</span>
+            <span class="n">user_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">user_ids</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+            <span class="n">movie_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">movie_ids</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+
+            <span class="c1"># Create edge_index tensor</span>
+            <span class="n">edge_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">user_tensor</span><span class="p">,</span> <span class="n">movie_tensor</span><span class="p">])</span>
+            <span class="n">edge_index_dict</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">edge_index</span>
+        
+        <span class="c1"># all_text_dict = torch.load(&#39;/nobackup/users/junhong/Data/pokec/embedding.pt&#39;)</span>
+        <span class="c1"># x = torch.zeros((len(dfn), 768))</span>
+        <span class="c1"># for column in self.node_features:</span>
+        <span class="c1">#     print(f&#39;Processing {column} ...&#39;)</span>
+        <span class="c1">#     text_dict = all_text_dict[column]</span>
+        <span class="c1">#     for idx, text in enumerate(tqdm(dfn[column])):</span>
+        <span class="c1">#         if text == text: # Check for nan</span>
+        <span class="c1">#             x[idx] += text_dict[text]</span>
+        
+        <span class="n">user_numeric_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;public&#39;</span><span class="p">,</span> <span class="s1">&#39;completion_percentage&#39;</span><span class="p">,</span> <span class="s1">&#39;AGE&#39;</span><span class="p">]</span> <span class="c1"># &#39;registration&#39;, &#39;last_login&#39;</span>
+        <span class="n">user_categorical_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;main_area&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Getting user numerical features...&quot;</span><span class="p">)</span>
+        <span class="n">user_num_feats</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">get_numerical_features</span><span class="p">(</span><span class="n">dfn</span><span class="p">,</span> <span class="n">user_numeric_features</span><span class="p">))[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Getting user categorical features...&quot;</span><span class="p">)</span>
+        <span class="n">user_cat_feats</span> <span class="o">=</span> <span class="n">get_categorical_features</span><span class="p">(</span><span class="n">dfn</span><span class="p">,</span> <span class="n">user_categorical_features</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Getting user text features...&quot;</span><span class="p">)</span>
+        <span class="n">user_text_feats</span> <span class="o">=</span> <span class="n">dfn</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">node_fields</span><span class="p">[</span><span class="mi">7</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">user_text_feats</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">user_text_feats</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="n">HeteroData</span><span class="p">()</span>
+
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">num_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dfn</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">dfn</span><span class="p">[</span><span class="s1">&#39;gender&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">user_num_feats</span><span class="p">,</span> <span class="n">user_cat_feats</span><span class="p">,</span> <span class="n">user_text_feats</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># all_item_dict = torch.load(&#39;/nobackup/users/junhong/Data/pokec/emb_items.pt&#39;)</span>
+        <span class="c1"># for column, emb_dict in all_item_dict.items():</span>
+        <span class="c1">#     x = torch.zeros((len(emb_dict), 768))</span>
+        <span class="c1">#     for name, emb in emb_dict.items():</span>
+        <span class="c1">#         x[entry_dict[column].get(name)] = torch.from_numpy(emb)</span>
+
+        <span class="c1">#     data[column].num_nodes = len(entry_dict[column])</span>
+        <span class="c1">#     data[column].x = x</span>
+
+        <span class="n">source_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">dfe</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+        <span class="n">target_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">dfe</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;has_friend&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">edge_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">source_tensor</span><span class="p">,</span> <span class="n">target_tensor</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">entry_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;lists&#39;</span><span class="p">,</span> <span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">edge_index</span> <span class="o">=</span> <span class="n">edge_index_dict</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">train_size</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="c1"># 50% train</span>
+        <span class="n">val_size</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="c1"># 25% val, 25% test</span>
+        <span class="n">train_idx</span><span class="p">,</span> <span class="n">temp_idx</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">train_size</span><span class="p">)</span>
+        <span class="n">val_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">temp_idx</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="n">val_size</span><span class="p">)</span>
+        <span class="n">train_mask</span> <span class="o">=</span> <span class="n">index_to_mask</span><span class="p">(</span><span class="n">train_idx</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">)</span>
+        <span class="n">val_mask</span> <span class="o">=</span> <span class="n">index_to_mask</span><span class="p">(</span><span class="n">val_idx</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">)</span>
+        <span class="n">test_mask</span> <span class="o">=</span> <span class="n">index_to_mask</span><span class="p">(</span><span class="n">test_idx</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">train_mask</span> <span class="o">=</span> <span class="n">train_mask</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">val_mask</span> <span class="o">=</span> <span class="n">val_mask</span>
+        <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">test_mask</span> <span class="o">=</span> <span class="n">test_mask</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_filter</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_transform</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, H2GB Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; H2GB 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/mytheme.css" />
+
+  
+    <link rel="shortcut icon" href="../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/js/version_alert.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Introduction by Example" href="../get_started/introduction.html" />
+    <link rel="prev" title="H²GB Documentation" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Install H²GB</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation-via-anaconda">Installation via Anaconda</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-via-pypi">Installation via PyPi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#additional-libraries">Additional Libraries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#frequently-asked-questions">Frequently Asked Questions</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/introduction.html">Introduction by Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">H2GB.datasets</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">H2GB</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/install/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
+<p><span class="inline-logo h2gb">H²GB</span> is available for <span class="inline-logo python">Python 3.8</span> to <span class="inline-logo python">Python 3.12</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We do not recommend installation as a root user on your system <span class="inline-logo python">Python</span>.
+Please setup a virtual environment, <em>e.g.</em>, via <span class="inline-logo conda empty"></span> <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install">Anaconda or Miniconda</a>, or create a <a class="reference external" href="https://www.docker.com/">Docker image</a>.</p>
+</div>
+<section id="installation-via-anaconda">
+<h2>Installation via Anaconda<a class="headerlink" href="#installation-via-anaconda" title="Permalink to this heading"></a></h2>
+<p>You can now install <span class="inline-logo pyg">PyG</span> via <span class="inline-logo conda empty"></span> <a class="reference external" href="https://anaconda.org/pyg/pyg">Anaconda</a> for all major OS, <span class="inline-logo pytorch">PyTorch</span> and CUDA combinations 🤗.
+If you have not yet installed <span class="inline-logo pytorch">PyTorch</span>, install it via <span class="inline-logo conda empty"></span> <code class="xref py py-obj docutils literal notranslate"><span class="pre">conda</span> <span class="pre">install</span></code> as described in its <a class="reference external" href="https://pytorch.org/get-started/locally/">official documentation</a>.
+Given that you have <span class="inline-logo pytorch">PyTorch</span> installed (<code class="xref py py-obj docutils literal notranslate"><span class="pre">&gt;=1.11.0</span></code>), simply run</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda install pyg -c pyg
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Conda packages are currently not available for Windows and M1/M2/M3 macs.</p>
+</div>
+<p>If <span class="inline-logo conda empty"></span> <code class="xref py py-obj docutils literal notranslate"><span class="pre">conda</span></code> does not pick up the correct CUDA version of <span class="inline-logo pyg">PyG</span>, you can enforce it as follows:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda install pyg=*=*cu* -c pyg
+</pre></div>
+</div>
+</section>
+<section id="installation-via-pypi">
+<h2>Installation via PyPi<a class="headerlink" href="#installation-via-pypi" title="Permalink to this heading"></a></h2>
+<p>From <span class="inline-logo pyg empty"></span> <strong>PyG 2.3</strong> onwards, you can install and use <span class="inline-logo pyg">PyG</span> <strong>without any external library</strong> required except for <span class="inline-logo pytorch">PyTorch</span>.
+For this, simply run:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install torch_geometric
+</pre></div>
+</div>
+</section>
+<section id="additional-libraries">
+<h2>Additional Libraries<a class="headerlink" href="#additional-libraries" title="Permalink to this heading"></a></h2>
+<p>If you want to utilize the full set of features from <span class="inline-logo pyg">PyG</span>, there exists several additional libraries you may want to install:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/pyg-team/pyg-lib">pyg-lib</a>: Heterogeneous GNN operators and graph sampling routines</p></li>
+<li><p><a class="reference external" href="https://github.com/rusty1s/pytorch_scatter">torch-scatter</a>: Accelerated and efficient sparse reductions</p></li>
+<li><p><a class="reference external" href="https://github.com/rusty1s/pytorch_sparse">torch-sparse</a>: <code class="xref py py-class docutils literal notranslate"><span class="pre">SparseTensor</span></code> support, see <a class="reference external" href="https://pytorch-geometric.readthedocs.io/en/latest/advanced/sparse_tensor.html">here</a></p></li>
+<li><p><a class="reference external" href="https://github.com/rusty1s/pytorch_cluster">torch-cluster</a>: Graph clustering routines</p></li>
+<li><p><a class="reference external" href="https://github.com/rusty1s/pytorch_spline_conv">torch-spline-conv</a>: <code class="xref py py-class docutils literal notranslate"><span class="pre">SplineConv</span></code> support</p></li>
+</ul>
+<p>These packages come with their own CPU and GPU kernel implementations based on the <span class="inline-logo pytorch empty"></span> <a class="reference external" href="https://github.com/pytorch/extension-cpp/">PyTorch C++/CUDA/hip(ROCm) extension interface</a>.
+For a basic usage of <span class="inline-logo pyg">PyG</span>, these dependencies are <strong>fully optional</strong>.
+We recommend to start with a minimal installation, and install additional dependencies once you start to actually need them.</p>
+<section id="installation-from-wheels">
+<h3>Installation from Wheels<a class="headerlink" href="#installation-from-wheels" title="Permalink to this heading"></a></h3>
+<p>For ease of installation of these extensions, we provide <code class="xref py py-obj docutils literal notranslate"><span class="pre">pip</span></code> wheels for these packages for all major OS, <span class="inline-logo pytorch">PyTorch</span> and CUDA combinations, see <a class="reference external" href="https://data.pyg.org/whl">here</a>:</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Wheels are currently not available for M1/M2/M3 macs.
+Please install the extension packages <a class="reference external" href="installation.html#installation-from-source">from source</a>.</p>
+</div>
+<ol class="arabic">
+<li><p>Ensure that at least <span class="inline-logo pytorch">PyTorch</span> 1.13.0 is installed:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>python -c &quot;import torch; print(torch.__version__)&quot;
+&gt;&gt;&gt; 2.3.0
+</pre></div>
+</div>
+</li>
+<li><p>Find the CUDA version <span class="inline-logo pytorch">PyTorch</span> was installed with:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>python -c &quot;import torch; print(torch.version.cuda)&quot;
+&gt;&gt;&gt; 12.1
+</pre></div>
+</div>
+</li>
+<li><p>Install the relevant packages:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-${TORCH}+${CUDA}.html
+</pre></div>
+</div>
+<p>where <code class="xref py py-obj docutils literal notranslate"><span class="pre">${TORCH}</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">${CUDA}</span></code> should be replaced by the specific <span class="inline-logo pytorch">PyTorch</span> and CUDA versions, respectively:</p>
+<ul class="simple">
+<li><p><span class="inline-logo pytorch">PyTorch</span> 2.3: <code class="xref py py-obj docutils literal notranslate"><span class="pre">${TORCH}=2.3.0</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">${CUDA}=cpu|cu118|cu121</span></code></p></li>
+<li><p><span class="inline-logo pytorch">PyTorch</span> 2.2: <code class="xref py py-obj docutils literal notranslate"><span class="pre">${TORCH}=2.2.0</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">${CUDA}=cpu|cu118|cu121</span></code></p></li>
+<li><p><span class="inline-logo pytorch">PyTorch</span> 2.1: <code class="xref py py-obj docutils literal notranslate"><span class="pre">${TORCH}=2.1.0</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">${CUDA}=cpu|cu118|cu121</span></code></p></li>
+<li><p><span class="inline-logo pytorch">PyTorch</span> 2.0: <code class="xref py py-obj docutils literal notranslate"><span class="pre">${TORCH}=2.0.0</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">${CUDA}=cpu|cu117|cu118</span></code></p></li>
+<li><p><span class="inline-logo pytorch">PyTorch</span> 1.13: <code class="xref py py-obj docutils literal notranslate"><span class="pre">${TORCH}=1.13.0</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">${CUDA}=cpu|cu116|cu117</span></code></p></li>
+</ul>
+<p>For example, for <span class="inline-logo pytorch">PyTorch</span> 2.3.* and CUDA 12.1, type:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.3.0+cu121.html
+</pre></div>
+</div>
+<p>For example, for <span class="inline-logo pytorch">PyTorch</span> 2.2.* and CUDA 11.8, type:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.2.0+cu118.html
+</pre></div>
+</div>
+</li>
+</ol>
+<p><strong>Note:</strong> Binaries of older versions are also provided for <span class="inline-logo pytorch">PyTorch</span> 1.4.0, 1.5.0, 1.6.0, 1.7.0/1.7.1, 1.8.0/1.8.1, 1.9.0, 1.10.0/1.10.1/1.10.2, 1.11.0, 1.12.0/1.12.1, 1.13.0/1.13.1, 2.0.0/2.0.1, and 2.1.0/2.1.1/2.1.2 (following the same procedure).
+<strong>For older versions, you need to explicitly specify the latest supported version number</strong> or install via <code class="xref py py-obj docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--no-index</span></code> in order to prevent a manual installation from source.
+You can look up the latest supported version number <a class="reference external" href="https://data.pyg.org/whl">here</a>.</p>
+<p><strong>ROCm:</strong> The external <a class="reference external" href="https://github.com/Looong01/pyg-rocm-build">pyg-rocm-build repository</a> provides wheels and detailed instructions on how to install <span class="inline-logo pyg">PyG</span> for ROCm.
+If you have any questions about it, please open an issue <a class="reference external" href="https://github.com/Looong01/pyg-rocm-build/issues">here</a>.</p>
+</section>
+<section id="installation-from-source">
+<h3>Installation from Source<a class="headerlink" href="#installation-from-source" title="Permalink to this heading"></a></h3>
+<p>In case a specific version is not supported by <a class="reference external" href="https://data.pyg.org/whl">our wheels</a>, you can alternatively install them from source:</p>
+<ol class="arabic">
+<li><p>Ensure that your CUDA is setup correctly (optional):</p>
+<ol class="arabic">
+<li><p>Check if <span class="inline-logo pytorch">PyTorch</span> is installed with CUDA support:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>python -c &quot;import torch; print(torch.cuda.is_available())&quot;
+&gt;&gt;&gt; True
+</pre></div>
+</div>
+</li>
+<li><p>Add CUDA to <code class="xref py py-obj docutils literal notranslate"><span class="pre">$PATH</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">$CPATH</span></code> (note that your actual CUDA path may vary from <code class="xref py py-obj docutils literal notranslate"><span class="pre">/usr/local/cuda</span></code>):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>export PATH=/usr/local/cuda/bin:$PATH
+echo $PATH
+&gt;&gt;&gt; /usr/local/cuda/bin:...
+
+export CPATH=/usr/local/cuda/include:$CPATH
+echo $CPATH
+&gt;&gt;&gt; /usr/local/cuda/include:...
+</pre></div>
+</div>
+</li>
+<li><p>Add CUDA to <code class="xref py py-obj docutils literal notranslate"><span class="pre">$LD_LIBRARY_PATH</span></code> on Linux and to <code class="xref py py-obj docutils literal notranslate"><span class="pre">$DYLD_LIBRARY_PATH</span></code> on macOS (note that your actual CUDA path may vary from <code class="xref py py-obj docutils literal notranslate"><span class="pre">/usr/local/cuda</span></code>):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+echo $LD_LIBRARY_PATH
+&gt;&gt;&gt; /usr/local/cuda/lib64:...
+
+export DYLD_LIBRARY_PATH=/usr/local/cuda/lib:$DYLD_LIBRARY_PATH
+echo $DYLD_LIBRARY_PATH
+&gt;&gt;&gt; /usr/local/cuda/lib:...
+</pre></div>
+</div>
+</li>
+<li><p>Verify that <code class="xref py py-obj docutils literal notranslate"><span class="pre">nvcc</span></code> is accessible from terminal:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nvcc --version
+&gt;&gt;&gt; 11.8
+</pre></div>
+</div>
+</li>
+<li><p>Ensure that <span class="inline-logo pytorch">PyTorch</span> and system CUDA versions match:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>python -c &quot;import torch; print(torch.version.cuda)&quot;
+&gt;&gt;&gt; 11.8
+
+nvcc --version
+&gt;&gt;&gt; 11.8
+</pre></div>
+</div>
+</li>
+</ol>
+</li>
+<li><p>Install the relevant packages:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install --verbose git+https://github.com/pyg-team/pyg-lib.git
+pip install --verbose torch_scatter
+pip install --verbose torch_sparse
+pip install --verbose torch_cluster
+pip install --verbose torch_spline_conv
+</pre></div>
+</div>
+</li>
+</ol>
+<p>In rare cases, CUDA or <span class="inline-logo python">Python</span> path problems can prevent a successful installation.
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">pip</span></code> may even signal a successful installation, but execution simply crashes with <code class="xref py py-obj docutils literal notranslate"><span class="pre">Segmentation</span> <span class="pre">fault</span> <span class="pre">(core</span> <span class="pre">dumped)</span></code>.
+We collected common installation errors in the <a class="reference external" href="installation.html#frequently-asked-questions">Frequently Asked Questions</a> subsection.
+In case the FAQ does not help you in solving your problem, please create an <a class="reference external" href="https://github.com/pyg-team/pytorch_geometric/issues">issue</a>.
+Before, please verify that your CUDA is set up correctly by following the official <a class="reference external" href="https://docs.nvidia.com/cuda">installation guide</a>.</p>
+</section>
+</section>
+<section id="frequently-asked-questions">
+<h2>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this heading"></a></h2>
+<ol class="arabic">
+<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">undefined</span> <span class="pre">symbol:</span> <span class="pre">**make_function_schema**</span></code>: This issue signals (1) a <strong>version conflict</strong> between your installed <span class="inline-logo pytorch">PyTorch</span> version and the <code class="xref py py-obj docutils literal notranslate"><span class="pre">${TORCH}</span></code> version specified to install the extension packages, or (2) a version conflict between the installed CUDA version of <span class="inline-logo pytorch">PyTorch</span> and the <code class="xref py py-obj docutils literal notranslate"><span class="pre">${CUDA}</span></code> version specified to install the extension packages.
+Please verify that your <span class="inline-logo pytorch">PyTorch</span> version and its CUDA version <strong>match</strong> with your installation command:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>python -c &quot;import torch; print(torch.__version__)&quot;
+python -c &quot;import torch; print(torch.version.cuda)&quot;
+nvcc --version
+</pre></div>
+</div>
+<p>For re-installation, ensure that you do not run into any caching issues by using the <code class="xref py py-obj docutils literal notranslate"><span class="pre">pip</span> <span class="pre">--force-reinstall</span> <span class="pre">--no-cache-dir</span></code> flags.
+In addition, the <code class="xref py py-obj docutils literal notranslate"><span class="pre">pip</span> <span class="pre">--verbose</span></code> option may help to track down any issues during installation.
+If you still do not find any success in installation, please try to install the extension packages <a class="reference external" href="installation.html#installation-from-source">from source</a>.</p>
+</li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="H²GB Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../get_started/introduction.html" class="btn btn-neutral float-right" title="Introduction by Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, H2GB Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

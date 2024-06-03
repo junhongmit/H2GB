@@ -18,13 +18,12 @@ from torch_geometric.data import (HeteroData, InMemoryDataset)
 from ogb.lsc import MAG240MDataset
 from ogb.nodeproppred import PygNodePropPredDataset
 from torch_geometric.datasets import (DBLP, IMDB, OGB_MAG, Planetoid, MovieLens)
-from H2GB.loader.dataset.oag_dataset import OAGDataset
-from H2GB.loader.dataset.mag_dataset import MAGDataset
-from H2GB.loader.dataset.rcdd_dataset import RCDDDataset
-from H2GB.loader.dataset.pokec_dataset import PokecDataset
-from H2GB.loader.dataset.IeeeFraudDetection_dataset import IeeeFraudDetectionDataset
-from H2GB.loader.dataset.ccf_dataset import CreditCardFraudDetectionDataset
-from H2GB.loader.dataset.dns_dataset import DNSDataset
+from H2GB.datasets.oag_dataset import OAGDataset
+from H2GB.datasets.mag_dataset import MAGDataset
+from H2GB.datasets.rcdd_dataset import RCDDDataset
+from H2GB.datasets.pokec_dataset import PokecDataset
+from H2GB.datasets.ieee_cis_dataset import IeeeCisDataset
+from H2GB.datasets.dns_dataset import DNSDataset
 from H2GB.graphgym.config import cfg
 from H2GB.graphgym.loader import load_pyg, load_ogb, set_dataset_attr
 from H2GB.graphgym.register import register_loader
@@ -41,22 +40,6 @@ from H2GB.loader.encoding_generator import (preprocess_Node2Vec, check_Node2Vec,
                                                  preprocess_Metapath, check_Metapath, load_Metapath,\
                                                  preprocess_KGE, check_KGE, load_KGE)
 
-# For large-scale heterophilic dataset download
-dataset_drive_url = {
-    'twitch-gamer_feat' : '1fA9VIIEI8N0L27MSQfcBzJgRQLvSbrvR',
-    'twitch-gamer_edges' : '1XLETC6dG3lVl7kDmytEJ52hvDMVdxnZ0',
-    'snap-patents' : '1ldh23TSY1PwXia6dU0MYcpyEgX-w3Hia', 
-    'pokec' : '1dNs5E7BrWJbgcHeQ_zuy5Ozp2tRCWG0y', 
-    'yelp-chi': '1fAXtTVQS4CfEk4asqrFw9EPmlUPGbGtJ', 
-    'wiki_views': '1p5DlVHrnFgYm3VsNIzahSsvCD424AyvP', # Wiki 1.9M 
-    'wiki_edges': '14X7FlkjrlUgmnsYtPwdh-gGuFla4yb5u', # Wiki 1.9M 
-    'wiki_features': '1ySNspxbK-snNoAZM7oxiWGvOnTRdSyEK' # Wiki 1.9M
-}
-
-splits_drive_url = {
-    'snap-patents' : '12xbBRqd8mtG_XkNLH8dRRNZJvVM4Pw-N', 
-    'pokec' : '1ZhpAiyTNc0cE_hhgyiqxnkKREHK7MK-_', 
-}
 
 def get_sparse_tensor(edge_index, num_nodes=None, num_src_nodes=None, num_dst_nodes=None, return_e_id=False):
     if isinstance(edge_index, SparseTensor):
@@ -179,19 +162,22 @@ def load_dataset_master(format, name, dataset_dir):
     """
     if format.startswith('PyG-'):
         pyg_dataset_id = format.split('-', 1)[1]
-        dataset_dir = osp.join(dataset_dir, pyg_dataset_id)
+        if pyg_dataset_id in ['ogbn-mag', 'mag-year']:
+            dataset_dir = osp.join(dataset_dir, 'mag')
+        else:
+            dataset_dir = osp.join(dataset_dir, pyg_dataset_id)
 
         if pyg_dataset_id == 'DBLP':
             dataset = preformat_DBLP(dataset_dir)
 
         elif pyg_dataset_id == 'IMDB':
             dataset = preformat_IMDB(dataset_dir)
-
-        elif pyg_dataset_id == 'Heterophilic':
-            dataset = preformat_Heterophilic(dataset_dir, name)
         
         elif pyg_dataset_id == 'OGB_MAG':
             dataset = preformat_OGB_MAG(dataset_dir)
+
+        elif pyg_dataset_id in ['ogbn-mag', 'mag-year']:
+            dataset = preformat_MAG(dataset_dir, pyg_dataset_id)
 
         elif pyg_dataset_id == 'OAG':
             dataset = preformat_OAG(dataset_dir, name)
@@ -489,100 +475,6 @@ def preformat_IMDB(dataset_dir):
     return dataset
 
 
-def preformat_Heterophilic(dataset_dir, name):
-    """Load and preformat Heterophilic datasets.
-
-    Args:
-        dataset_dir: path where to store the cached dataset
-
-    Returns:
-        PyG dataset object
-    """
-    if name == 'arxiv-year':
-        dataset_dir = dataset_dir.rsplit(os.sep, 1)[0]
-        dataset = InMemoryDataset(root=dataset_dir)
-        dataset.name = 'arxiv-year'
-
-        ogb_dataset = PygNodePropPredDataset(name='ogbn-arxiv', root=dataset_dir)
-        graph = ogb_dataset[0]
-        label = even_quantile_labels(graph['node_year'].squeeze().numpy(), nclasses=5, verbose=False)
-        data = HeteroData()
-        data['paper'].x = graph.x
-        data['paper'].y = torch.from_numpy(label).squeeze()
-        data['paper'].n_id = torch.arange(data['paper'].x.shape[0], dtype=torch.long)
-        data['paper', 'cites', 'paper'].edge_index = graph.edge_index #to_undirected(graph.edge_index)
-        # graph.edge_index
-        train_size=.5 # 50%
-        valid_size=.5 # 25%
-        train_idx, temp_idx = train_test_split(torch.where(data['paper'].y != -1)[0], train_size=train_size)
-        val_idx, test_idx = train_test_split(temp_idx, train_size=valid_size)
-        data['paper'].train_mask = index_to_mask(train_idx, size=data['paper'].y.shape[0])
-        data['paper'].val_mask = index_to_mask(val_idx, size=data['paper'].y.shape[0])
-        data['paper'].test_mask = index_to_mask(test_idx, size=data['paper'].y.shape[0])
-        dataset.data = data
-    elif name == 'pokec':
-        dataset_dir = dataset_dir.rsplit(os.sep, 1)[0]
-        data_path = osp.join(dataset_dir, name, 'pokec.mat')
-        if not osp.exists(data_path):
-            if not osp.exists(osp.join(dataset_dir, name)):
-                os.mkdir(osp.join(dataset_dir, name))
-            gdown.download(id=dataset_drive_url['pokec'], \
-                output=data_path, quiet=False)
-
-        fulldata = scipy.io.loadmat(data_path)
-
-        dataset = InMemoryDataset(root=dataset_dir)
-        dataset.name = 'pokec'
-        data = HeteroData()
-        data['user'].x = torch.tensor(fulldata['node_feat']).float()
-        data['user'].y = torch.tensor(fulldata['label'].flatten(), dtype=torch.long)
-        data['user'].n_id = torch.arange(data['user'].x.shape[0], dtype=torch.long)
-        data['user', 'is_friend_with', 'user'].edge_index = to_undirected(torch.tensor(fulldata['edge_index'], dtype=torch.long))
-        
-        train_size=.5 # 50%
-        valid_size=.5 # 25%
-        train_idx, temp_idx = train_test_split(torch.where(data['user'].y != -1)[0], train_size=train_size)
-        val_idx, test_idx = train_test_split(temp_idx, train_size=valid_size)
-        data['user'].train_mask = index_to_mask(train_idx, size=data['user'].y.shape[0])
-        data['user'].val_mask = index_to_mask(val_idx, size=data['user'].y.shape[0])
-        data['user'].test_mask = index_to_mask(test_idx, size=data['user'].y.shape[0])
-        dataset.data = data
-    elif name == 'snap-patents':
-        dataset_dir = dataset_dir.rsplit(os.sep, 1)[0]
-        data_path = osp.join(dataset_dir, name, 'snap_patents.mat')
-        if not osp.exists(data_path):
-            if not osp.exists(osp.join(dataset_dir, name)):
-                os.mkdir(osp.join(dataset_dir, name))
-            p = dataset_drive_url['snap-patents']
-            print(f"Snap patents url: {p}")
-            gdown.download(id=dataset_drive_url['snap-patents'], \
-                output=data_path, quiet=False)
-
-        fulldata = scipy.io.loadmat(data_path)
-
-        dataset = InMemoryDataset(root=dataset_dir)
-        dataset.name = 'snap-patents'
-
-        years = fulldata['years'].flatten()
-        label = even_quantile_labels(years, nclasses=5, verbose=False)
-        data = HeteroData()
-        data['patent'].x = torch.tensor(fulldata['node_feat'].todense(), dtype=torch.float)
-        data['patent'].y = torch.tensor(label, dtype=torch.long)
-        data['patent'].n_id = torch.arange(data['patent'].x.shape[0], dtype=torch.long)
-        data['patent', 'cites', 'patent'].edge_index = to_undirected(torch.tensor(fulldata['edge_index'], dtype=torch.long))
-        
-        train_size=.5 # 50%
-        valid_size=.5 # 25%
-        train_idx, temp_idx = train_test_split(torch.where(data['patent'].y != -1)[0], train_size=train_size)
-        val_idx, test_idx = train_test_split(temp_idx, train_size=valid_size)
-        data['patent'].train_mask = index_to_mask(train_idx, size=data['patent'].y.shape[0])
-        data['patent'].val_mask = index_to_mask(val_idx, size=data['patent'].y.shape[0])
-        data['patent'].test_mask = index_to_mask(test_idx, size=data['patent'].y.shape[0])
-        dataset.data = data
-        
-    return dataset
-
-
 def preformat_OGB_MAG(dataset_dir):
     """Load and preformat OGB_MAG datasets.
 
@@ -683,20 +575,6 @@ def preformat_RCDD(dataset_dir):
     return dataset
 
 
-def preformat_CCF(dataset_dir):
-    """Load and preformat CCF datasets.
-
-    Args:
-        dataset_dir: path where to store the cached dataset
-
-    Returns:
-        PyG dataset object
-    """
-    transform = T.ToUndirected(merge=True)
-    dataset = CreditCardFraudDetectionDataset(root=dataset_dir, transform=transform)
-    return dataset
-
-
 def preformat_Pokec(dataset_dir):
     """Load and preformat Pokec datasets.
 
@@ -742,6 +620,21 @@ def preformat_DNS(dataset_dir):
     return dataset
 
 
+def preformat_MAG(dataset_dir, name):
+    """Load and preformat ogbn-mag or mag-year datasets.
+
+    Args:
+        dataset_dir: path where to store the cached dataset
+        name: dataset name
+
+    Returns:
+        PyG dataset object
+    """
+    dataset = MAGDataset(root=dataset_dir, name=name, 
+                         rand_split=cfg.dataset.rand_split)
+    return dataset
+
+
 def preformat_OGB_Node(dataset_dir, name):
     """Load and preformat OGB Node Property Prediction datasets.
 
@@ -754,40 +647,9 @@ def preformat_OGB_Node(dataset_dir, name):
     """
     start = time.time()
 
-    # if name == 'ogbn-arxiv':
-    #     data = HeteroData()
-    #     data['paper'].x = dataset[0].x # assuming there's just one node type.
-    #     data['paper'].y = dataset[0].y.squeeze().masked_fill(torch.isnan(dataset[0].y.squeeze()), -1).type(torch.int64)
-    #     data['paper'].year = dataset[0].node_year.squeeze()
-    #     # data['paper', 'cites', 'paper'].edge_index = to_undirected(dataset[0].edge_index) # dataset[0].edge_index # 
-    #     start = time.time()
-    #     adj_t = get_sparse_tensor(dataset[0].edge_index, num_nodes=dataset[0].x.size(0))
-    #     # end = time.time()
-    #     # print("Get sparse tensor cost:", round(end - start, 3), "seconds")
-    #     # start = end
-    #     adj_t = adj_t.to_symmetric()
-    #     data['paper', 'cites', 'paper'].adj_t = adj_t
-    #     # end = time.time()
-    #     # print("To symmetric cost:", round(end - start, 3), "seconds")
-    #     # start = end
-    #     # rowptr, col, _ = adj_t.csr()
-    #     # end = time.time()
-    #     # print("CSR cost:", round(end - start, 3), "seconds")
-    #     dataset.data = data
-
-    #     splits = dataset.get_idx_split()
-    #     split_names = ['train_mask', 'val_mask', 'test_mask']
-    #     for i, key in enumerate(splits.keys()):
-    #         mask = index_to_mask(splits[key], size=dataset.data['paper'].y.shape[0])
-    #         dataset.data['paper'][split_names[i]] = mask
-    #         # set_dataset_attr(dataset, split_names[i], mask, len(mask))
-    #     # edge_index = to_undirected(dataset.data.edge_index)
-    #     # set_dataset_attr(dataset, 'edge_index', edge_index,
-    #     #                  edge_index.shape[1])
-
     path = osp.join(dataset_dir, '_'.join(name.split('-')), 'transformed')
     if not (osp.exists(path) and osp.isdir(path)) or cfg.dataset.rand_split:
-        if name in ['ogbn-mag', 'ogbn-mag-homo-whole', 'mag-year']:
+        if name in ['ogbn-mag', 'mag-year']:
             dataset = PygNodePropPredDataset(name='ogbn-mag', root=dataset_dir)
             graph = dataset[0]
             data = HeteroData()
@@ -859,26 +721,7 @@ def preformat_OGB_Node(dataset_dir, name):
             out = m.dot(data['author'].x)
             data['institution'].x = torch.from_numpy(out) # torch.cat((torch.from_numpy(out), torch.log10(deg['institution'].reshape(-1, 1))), axis=-1)  
 
-            if name == 'ogbn-mag-homo-whole':
-                homo = data.to_homogeneous()
-                new_data = HeteroData()
-                new_data['node'].x = homo.x
-                new_data['node'].y = homo.y
-                new_data[('node', 'edge', 'node')].edge_index = homo.edge_index
-
-                node_idx = 0
-                for idx, node_type in enumerate(data.node_types):
-                    if node_type == 'paper':
-                        node_idx = idx
-                        break
-                new_data['node'].train_mask = torch.zeros((homo.num_nodes,), dtype=torch.bool)
-                new_data['node'].val_mask = torch.zeros((homo.num_nodes,), dtype=torch.bool)
-                new_data['node'].test_mask = torch.zeros((homo.num_nodes,), dtype=torch.bool)
-                new_data['node'].train_mask[homo.node_type == node_idx] = data['paper'].train_mask
-                new_data['node'].val_mask[homo.node_type == node_idx] = data['paper'].val_mask
-                new_data['node'].test_mask[homo.node_type == node_idx] = data['paper'].test_mask
-                data = new_data
-            elif name == 'mag-year':
+            if name == 'mag-year':
                 label = even_quantile_labels(graph['node_year']['paper'].squeeze().numpy(), nclasses=5, verbose=False)
                 data['paper'].y = torch.from_numpy(label).squeeze() 
                 train_size=.5 # 50%
@@ -888,123 +731,8 @@ def preformat_OGB_Node(dataset_dir, name):
                 data['paper'].train_mask = index_to_mask(train_idx, size=data['paper'].y.shape[0])
                 data['paper'].val_mask = index_to_mask(val_idx, size=data['paper'].y.shape[0])
                 data['paper'].test_mask = index_to_mask(test_idx, size=data['paper'].y.shape[0])
-
-        elif name == 'ogbn-mag-homo':
-            dataset = PygNodePropPredDataset(name='ogbn-mag', root=dataset_dir)
-            graph = dataset[0]
-            data = HeteroData()
-
-            # Add edges (sparse adj_t)
-            edge_type = ('paper', 'cites', 'paper')
-            src_type, rel, dst_type = edge_type
-            data[(src_type, rel, dst_type)].adj_t = \
-                get_sparse_tensor(graph.edge_index_dict[edge_type], 
-                                num_src_nodes=graph.num_nodes_dict[src_type],
-                                num_dst_nodes=graph.num_nodes_dict[dst_type])
-            
-            data[(src_type, rel, dst_type)].adj_t = \
-                data[(src_type, rel, dst_type)].adj_t.to_symmetric()
-
-            # Add node features
-            def normalize(mx):
-                """Row-normalize sparse matrix"""
-                rowsum = np.array(mx.sum(1))
-                r_inv = np.power(rowsum, -1).flatten()
-                r_inv[np.isinf(r_inv)] = 0.
-                r_mat_inv = sp.diags(r_inv)
-                mx = r_mat_inv.dot(mx)
-                return mx
-
-            data['paper'].x = graph.x_dict['paper'] # torch.cat((graph.x_dict['paper'], torch.log10(deg['paper'].reshape(-1, 1))), axis=-1)
-            data['paper'].y = graph.y_dict['paper']
-
-            split_idx = dataset.get_idx_split()
-            train_paper = split_idx['train']['paper']
-            valid_paper = split_idx['valid']['paper']
-            test_paper  = split_idx['test']['paper']
-            data['paper'].train_mask = index_to_mask(train_paper, size=graph.y_dict['paper'].shape[0])
-            data['paper'].val_mask = index_to_mask(valid_paper, size=graph.y_dict['paper'].shape[0])
-            data['paper'].test_mask = index_to_mask(test_paper, size=graph.y_dict['paper'].shape[0])
         
-        elif name == 'ogbn-arxiv' or name == 'ogbn-papers100M':
-            dataset = PygNodePropPredDataset(name=name, root=dataset_dir)
-            data = HeteroData()
-            data['paper'].x = dataset[0].x # assuming there's just one node type.
-            data['paper'].y = dataset[0].y.squeeze().masked_fill(torch.isnan(dataset[0].y.squeeze()), -1).type(torch.int64)
-            data['paper'].year = dataset[0].node_year.squeeze()
-            data['paper', 'cites', 'paper'].edge_index = to_undirected(dataset[0].edge_index) # dataset[0].edge_index # 
-            start = time.time()
-            adj_t = get_sparse_tensor(dataset[0].edge_index, num_nodes=dataset[0].x.size(0))
-            end = time.time()
-            print("Get sparse tensor cost:", round(end - start, 3), "seconds")
-            start = end
-            adj_t = adj_t.to_symmetric()
-            end = time.time()
-            print("To symmetric cost:", round(end - start, 3), "seconds")
-            start = end
-            rowptr, col, _ = adj_t.csr()
-            end = time.time()
-            print("CSR cost:", round(end - start, 3), "seconds")
-            data['paper', 'cites', 'paper'].adj_t = adj_t
-
-            splits = dataset.get_idx_split()
-            split_names = ['train_mask', 'val_mask', 'test_mask']
-            for i, key in enumerate(splits.keys()):
-                mask = index_to_mask(splits[key], size=data['paper'].y.shape[0])
-                data['paper'][split_names[i]] = mask
-                # set_dataset_attr(dataset, split_names[i], mask, len(mask))
-            # edge_index = to_undirected(dataset.data.edge_index)
-            # set_dataset_attr(dataset, 'edge_index', edge_index,
-            #                  edge_index.shape[1])
-        elif name == 'ogbn-products':
-            dataset = PygNodePropPredDataset(name=name, root=dataset_dir)
-            data = HeteroData()
-            data['product'].x = dataset[0].x # assuming there's just one node type.
-            # data["product"].node_id = torch.arange(dataset[0].num_nodes)
-            data['product'].y = dataset[0].y.squeeze()
-            data['product', 'buy_with', 'product'].edge_index = to_undirected(dataset[0].edge_index) # to_undirected(dataset[0].edge_index)
-
-            splits = dataset.get_idx_split()
-            split_names = ['train_mask', 'val_mask', 'test_mask']
-            for i, key in enumerate(splits.keys()):
-                mask = index_to_mask(splits[key], size=data['product'].y.shape[0])
-                data['product'][split_names[i]] = mask
-        elif name == 'MAG240M':
-            dataset = MAG240MDataset(root=dataset_dir)
-            num_features = 768
-            data = HeteroData()
-            
-            N = dataset.num_papers + dataset.num_authors + dataset.num_institutions
-            x = np.memmap(f'{dataset.dir}/full_feat.npy', dtype=np.float16,
-                        mode='r', shape=(N, num_features))
-            
-            in_memory = True
-            if in_memory:
-                temp = np.empty((N, num_features), dtype=np.float16)
-                temp[:] = x
-                x = torch.from_numpy(temp)
-
-            y = torch.from_numpy(dataset.all_paper_label)
-            data['paper'].x = x[:dataset.num_papers]
-            data['paper'].y = y.type(torch.long)
-            data['author'].x = x[dataset.num_papers : dataset.num_papers+dataset.num_authors]
-            data['institution'].x = x[dataset.num_papers+dataset.num_authors :]
-
-            path = f'{dataset.dir}/full_adj_t.pt'
-            adj_t_dict = torch.load(path)
-            for edge_type, adj_t in adj_t_dict.items():
-                data[edge_type].adj_t = adj_t
-
-            train_idx = torch.from_numpy(dataset.get_idx_split('train'))
-            val_idx = torch.from_numpy(dataset.get_idx_split('valid'))
-            # Test-dev have to submit online. Let's save this for the future
-            # test_idx = torch.from_numpy(dataset.get_idx_split('test-dev'))
-            val_idx, test_idx = train_test_split(val_idx, train_size=0.5)
-            data['paper']['train_mask'] = index_to_mask(train_idx, size=data['paper'].y.shape[0])
-            data['paper']['val_mask'] = index_to_mask(val_idx, size=data['paper'].y.shape[0])
-            data['paper']['test_mask'] = index_to_mask(test_idx, size=data['paper'].y.shape[0])
-        
-        if not cfg.dataset.rand_split and name != 'MAG240M' and name != 'ogbn-mag-homo': # Sorry, we can't afford another storage for MAG240M
+        if not cfg.dataset.rand_split:
             os.mkdir(path)
             torch.save(data, osp.join(path, 'data.pt'))
     else:
@@ -1037,7 +765,7 @@ def preformat_IEEE_CIS(dataset_dir):
     """
     # transform = T.ToUndirected(merge=True)
     transform = T.Compose([T.ToUndirected(), T.AddSelfLoops(), T.NormalizeFeatures()])
-    dataset = IeeeFraudDetectionDataset(root=dataset_dir, transform=transform)
+    dataset = IeeeCisDataset(root=dataset_dir, transform=transform)
     dataset.name = 'IEEE-CIS'
     data = dataset.data
     num_nodes_train = int(0.8 * data["transaction"].num_nodes)

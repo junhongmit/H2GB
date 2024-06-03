@@ -4,11 +4,12 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to H2GB’s documentation! &mdash; H2GB 1.0.0 documentation</title>
+  <title>H²GB Documentation &mdash; H2GB 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/mytheme.css" />
 
   
+    <link rel="shortcut icon" href="_static/logo.png"/>
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -18,9 +19,12 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
+        <script src="_static/js/version_alert.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="install/installation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -33,7 +37,7 @@
           
           <a href="#">
             
-              <img src="https://raw.githubusercontent.com/junhongmit/H2GB/main/imgs/logo_small.png?token=GHSAT0AAAAAACEODFVPLFXOQROHU5B5JPVMZS37DXA" class="logo" alt="Logo"/>
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -43,12 +47,19 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">Welcome to H2GB’s documentation!</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+              <p class="caption" role="heading"><span class="caption-text">Install H²GB</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install/installation.html">Installation</a></li>
 </ul>
-</div>
+<p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="get_started/introduction.html">Introduction by Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/datasets.html">H2GB.datasets</a></li>
+</ul>
+
         </div>
       </div>
     </nav>
@@ -63,9 +74,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Welcome to H2GB’s documentation!</li>
+      <li class="breadcrumb-item active">H²GB Documentation</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/junhongmit/H2GB" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -73,9 +85,39 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="welcome-to-h2gb-s-documentation">
-<h1>Welcome to H2GB’s documentation!<a class="headerlink" href="#welcome-to-h2gb-s-documentation" title="Permalink to this heading"></a></h1>
+  <section id="h2gb-documentation">
+<h1>H²GB Documentation<a class="headerlink" href="#h2gb-documentation" title="Permalink to this heading"></a></h1>
+<p><span class="inline-logo h2gb empty"></span> <strong>H²GB</strong> <em>(Heterophilic and Heterogeneous Graph Benchmark)</em> is a library built
+upon <span class="inline-logo pytorch empty"></span> <a class="reference external" href="https://pytorch.org">PyTorch</a>, <span class="inline-logo pyg empty"></span> <a class="reference external" href="https://www.pyg.org/">PyTorch Geometric</a> and
+<span class="inline-logo graphgym empty"></span> <a class="reference external" href="https://github.com/snap-stanford/GraphGym">GraphGym</a>.
+It is a collection of graph benchmark datasets, data loaders, modular graph transformer framework
+(UnifiedGT) and evaluators for graph learning. The H²GB encompasses 9 diverse real-world datasets
+across 5 domains. Its data loaders are fully compatible with popular graph deep learning framework
+<span class="inline-logo pyg empty"></span> PyTorch Geometric. They provide automatic dataset downloading, standardized dataset splits,
+and unified performance evaluation.</p>
+<img alt="_images/flowchart.png" class="align-center" src="_images/flowchart.png" />
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
 <div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Install H²GB</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="install/installation.html">Installation</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="get_started/introduction.html">Introduction by Example</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules/datasets.html">H2GB.datasets</a></li>
+</ul>
 </div>
 </section>
 <section id="indices-and-tables">
@@ -90,12 +132,14 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="install/installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Junhong Lin.</p>
+    <p>&#169; Copyright 2024, H2GB Team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

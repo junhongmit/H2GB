@@ -28,5 +28,7 @@ sphinx:
 # to build your documentation
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 python:
+   pre_install:
+   - pip install torch numpy
    install:
    - requirements: docs/requirements.txt

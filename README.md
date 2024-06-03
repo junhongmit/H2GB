@@ -6,7 +6,7 @@
 	<a href=""><img src="https://img.shields.io/badge/arXiv-pdf-yellowgreen"></a>
 	<a href="https://pypi.org/project/py-tgb/"><img src="https://img.shields.io/pypi/v/py-tgb.svg?color=brightgreen"></a>
 	<a href="https://github.com/junhongmit/H2GB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-	<a href="https://docs.tgb.complexdatalab.com/"><img src="https://img.shields.io/badge/docs-orange"></a>
+	<a href="https://junhongmit.github.io/H2GB/"><img src="https://img.shields.io/badge/Documentations-orange"></a>
 </p>
 
 --------------------------------------------------------------------------------

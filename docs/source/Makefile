@@ -17,6 +17,7 @@ help:
 # Custom target to build HTML files directly into /docs
 html:
 	@$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@touch "$(BUILDDIR)/.nojekyll"
 
 # Custom clean target to remove built files but not the source directory
 clean:

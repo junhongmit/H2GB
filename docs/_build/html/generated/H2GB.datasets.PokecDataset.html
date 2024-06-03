@@ -95,6 +95,44 @@
 <dt class="sig sig-object py" id="H2GB.datasets.PokecDataset">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PokecDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/H2GB/datasets/pokec_dataset.html#PokecDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#H2GB.datasets.PokecDataset" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">InMemoryDataset</span></code></p>
+<p>IEEE-CIS-G is a heterogeneous financial network extracted from a tabular
+transaction dataset from <a class="reference external" href="https://kaggle.com/competitions/ieee-fraud-detection">IEEE-CIS Fraud Detection Kaggle Competition</a>.
+The original dataset contains credit card transactions provided by Vesta
+Corporation, a leading payment service company whose data consists of
+verified transactions. We defined a bipartite graph structure based on
+the available information linked to each credit card transaction, for
+example product code, card information, purchaser and recipient email
+domain, etc. The graph therefore contains 12 diverse entities, including
+the transaction node, and transaction information nodes. It also consists
+of 22 types of relation, connecting the transaction node to each information
+node.
+Each transaction is associated with a 4823-dimensional feature vector extracting
+from the transaction categorical and numerical features. More description
+of the features can be found in the <a class="reference external" href="https://www.kaggle.com/c/ieee-fraud-detection/discussion/101203">Kaggle discussion</a>. Each transaction node is labeled
+with a binary label tagging whether is a fraudulent transaction or not.
+This dataset has around 4% of fraudulent transactions. We split the dataset
+over the transaction time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Root directory where the dataset should be saved.</p></li>
+<li><p><strong>non_target_node_types</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Define all other node
+types besides the transaction node. (default: <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>)</p></li>
+<li><p><strong>target_cat_feat_cols</strong> (<em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Define the categorical
+feature columns for the transaction node. (default: <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>)</p></li>
+<li><p><strong>transform</strong> (<em>callable</em><em>, </em><em>optional</em>) – A function/transform that takes in an
+<code class="xref py py-obj docutils literal notranslate"><span class="pre">torch_geometric.data.HeteroData</span></code> object and returns a
+transformed version. The data object will be transformed before
+every access. (default: <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>)</p></li>
+<li><p><strong>pre_transform</strong> (<em>callable</em><em>, </em><em>optional</em>) – A function/transform that takes in
+an <code class="xref py py-obj docutils literal notranslate"><span class="pre">torch_geometric.data.HeteroData</span></code> object and returns a
+transformed version. The data object will be transformed before
+being saved to disk. (default: <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>)</p></li>
+<li><p><strong>force_reload</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether to re-process the dataset.
+(default: <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>)</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

@@ -115,7 +115,45 @@
     <span class="k">return</span> <span class="p">[</span><span class="n">entry_dict</span><span class="p">[</span><span class="n">entry_name</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">hrefs</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">entry_dict</span><span class="p">[</span><span class="n">entry_name</span><span class="p">]]</span>
 
 <div class="viewcode-block" id="PokecDataset"><a class="viewcode-back" href="../../../generated/H2GB.datasets.PokecDataset.html#H2GB.datasets.PokecDataset">[docs]</a><span class="k">class</span> <span class="nc">PokecDataset</span><span class="p">(</span><span class="n">InMemoryDataset</span><span class="p">):</span>
-    
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    IEEE-CIS-G is a heterogeneous financial network extracted from a tabular</span>
+<span class="sd">    transaction dataset from `IEEE-CIS Fraud Detection Kaggle Competition</span>
+<span class="sd">    &lt;https://kaggle.com/competitions/ieee-fraud-detection&gt;`_.</span>
+<span class="sd">    The original dataset contains credit card transactions provided by Vesta</span>
+<span class="sd">    Corporation, a leading payment service company whose data consists of</span>
+<span class="sd">    verified transactions. We defined a bipartite graph structure based on</span>
+<span class="sd">    the available information linked to each credit card transaction, for</span>
+<span class="sd">    example product code, card information, purchaser and recipient email</span>
+<span class="sd">    domain, etc. The graph therefore contains 12 diverse entities, including</span>
+<span class="sd">    the transaction node, and transaction information nodes. It also consists</span>
+<span class="sd">    of 22 types of relation, connecting the transaction node to each information</span>
+<span class="sd">    node. </span>
+<span class="sd">    Each transaction is associated with a 4823-dimensional feature vector extracting</span>
+<span class="sd">    from the transaction categorical and numerical features. More description</span>
+<span class="sd">    of the features can be found in the `Kaggle discussion &lt;https://www.kaggle.com</span>
+<span class="sd">    /c/ieee-fraud-detection/discussion/101203&gt;`_. Each transaction node is labeled</span>
+<span class="sd">    with a binary label tagging whether is a fraudulent transaction or not.</span>
+<span class="sd">    This dataset has around 4\% of fraudulent transactions. We split the dataset</span>
+<span class="sd">    over the transaction time.</span>
+
+
+<span class="sd">    Args:</span>
+<span class="sd">        root (str): Root directory where the dataset should be saved.</span>
+<span class="sd">        non_target_node_types (List[str], optional): Define all other node</span>
+<span class="sd">            types besides the transaction node. (default: :obj:`None`)</span>
+<span class="sd">        target_cat_feat_cols (List[str], optional): Define the categorical</span>
+<span class="sd">            feature columns for the transaction node. (default: :obj:`None`)</span>
+<span class="sd">        transform (callable, optional): A function/transform that takes in an</span>
+<span class="sd">            :obj:`torch_geometric.data.HeteroData` object and returns a</span>
+<span class="sd">            transformed version. The data object will be transformed before</span>
+<span class="sd">            every access. (default: :obj:`None`)</span>
+<span class="sd">        pre_transform (callable, optional): A function/transform that takes in</span>
+<span class="sd">            an :obj:`torch_geometric.data.HeteroData` object and returns a</span>
+<span class="sd">            transformed version. The data object will be transformed before</span>
+<span class="sd">            being saved to disk. (default: :obj:`None`)</span>
+<span class="sd">        force_reload (bool, optional): Whether to re-process the dataset.</span>
+<span class="sd">            (default: :obj:`False`)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     

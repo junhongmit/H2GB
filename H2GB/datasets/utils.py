@@ -16,8 +16,9 @@ def download_dataset(url, output_directory):
     try:
         output_path = gdown.download(download_url, output_directory + osp.sep, quiet=False)
     except:
-        print('It looks like Gdown encounter errors during downloading. However, '
-              'You still can download the file from a web browser by using this link:\n\n'
+        print('It looks like Gdown encounters errors, or Google drive exhibits download '
+              'number limits during downloading. However, You still can download the file '
+              'from a web browser by using this link:\n\n'
               f'{url}\n\n'
               'Then unzip this file (only if it is a Zip file), and manually put all the content to '
               f'{output_directory}.')

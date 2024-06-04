@@ -420,7 +420,7 @@ def preprocess_Metapath(pe_dir, dataset):
         num_negative_samples = 8
         batch_size = 128
         lr = 0.01
-    elif dataset.name == 'DNS':
+    elif dataset.name == 'PDNS':
         metapath = [
             ('domain_node', 'resolves', 'ip_node'),
             ('ip_node', 'rev_resolves', 'domain_node'),

@@ -44,7 +44,7 @@ gt:
   layer_type: Transformer
   layers: 3
   n_heads: 8
-  dim_hidden: 256  # `gt.dim_hidden` must match `gnn.dim_inner`
+  dim_hidden: 256  
   dropout: 0.2     # global transformer dropout
   attn_dropout: 0.2
   batch_norm: False
@@ -56,8 +56,8 @@ gt:
 gnn:
   head: Hetero_Node
   layers_pre_mp: 1
-  layers_post_mp: 1  # Not used when `gnn.head: san_graph`
-  dim_inner: 256  # `gt.dim_hidden` must match `gnn.dim_inner`
+  layers_post_mp: 1  
+  dim_inner: 256  
   act: relu
   input_dropout: 0.0
   dropout: 0.0  # local MP-GNN dropout

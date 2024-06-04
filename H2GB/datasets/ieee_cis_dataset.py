@@ -1,9 +1,11 @@
+import os.path as osp
 from typing import Callable, List, Optional
 import numpy as np
 import pandas as pd
 import torch
 from torch_geometric.data import HeteroData, InMemoryDataset
 from tqdm import tqdm
+from .utils import download_dataset
 
 
 DEFAULT_NON_TARGET_NODE_TYPES = [
@@ -139,7 +141,7 @@ class IeeeCisDataset(InMemoryDataset):
             (default: :obj:`False`)
     """
 
-    url = "https://www.kaggle.com/c/ieee-fraud-detection/data"
+    url = "https://drive.google.com/file/d/1JBrvglTqeidTgl5ElaRjAgIPCc6udyyL/view?usp=drive_link"
     exclude_cols = ["TransactionID", "isFraud", "TransactionDT"]
 
     def __init__(
@@ -174,10 +176,8 @@ class IeeeCisDataset(InMemoryDataset):
         return ["data.pt"]
 
     def download(self):
-        raise RuntimeError(
-            f"Dataset not found. Please download {self.raw_file_names} from "
-            f"'{self.url}' and move it to '{self.raw_dir}'"
-        )
+        if not all([osp.exists(f) for f in self.raw_paths]):
+            download_dataset(self.url, self.root)
 
     def process(self):
         train_transaction_df = pd.read_csv(self.raw_paths[0])

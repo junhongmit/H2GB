@@ -47,8 +47,8 @@ model:
 gnn:
   head: Hetero_Node
   layers_pre_mp: 0
-  layers_post_mp: 1  # Not used when `gnn.head: san_graph`
-  dim_inner: 512  # `gt.dim_hidden` must match `gnn.dim_inner`
+  layers_post_mp: 1  
+  dim_inner: 512  
   batch_norm: False
   layer_norm: True
   act: relu

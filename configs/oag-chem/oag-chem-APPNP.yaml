@@ -45,8 +45,8 @@ gnn:
   K: 3
   alpha: 0.1
   layers_pre_mp: 2
-  layers_post_mp: 1  # Not used when `gnn.head: san_graph`
-  dim_inner: 256  # `gt.dim_hidden` must match `gnn.dim_inner`
+  layers_post_mp: 1  
+  dim_inner: 256  
   batch_norm: True
   layer_norm: False
   act: relu

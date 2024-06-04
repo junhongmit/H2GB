@@ -63,7 +63,7 @@ gt:
   layers: 3
   layers_post_gt: 1
   attn_heads: 8
-  dim_hidden: 128  # `gt.dim_hidden` must match `gnn.dim_inner`
+  dim_hidden: 128  
   dropout: 0.5     # global transformer dropout
   attn_dropout: 0.0
   batch_norm: False

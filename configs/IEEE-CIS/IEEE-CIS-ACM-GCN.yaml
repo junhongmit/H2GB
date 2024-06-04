@@ -44,7 +44,7 @@ model:
 gnn:
   layer_type: acmgcn
   layers_mp: 3
-  dim_inner: 128  # `gt.dim_hidden` must match `gnn.dim_inner`
+  dim_inner: 128
   dropout: 0.5
 optim:
   batch_accumulation: 1

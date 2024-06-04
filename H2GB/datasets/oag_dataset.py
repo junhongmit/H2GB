@@ -4,6 +4,7 @@ import os.path as osp
 from collections import defaultdict
 from typing import Callable, List, Optional
 
+import numpy as np
 import torch
 
 from torch_geometric.data import (
@@ -12,16 +13,7 @@ from torch_geometric.data import (
     download_url,
     extract_zip,
 )
-
-import dill
-class RenameUnpickler(dill.Unpickler):
-    def find_class(self, module, name):
-        renamed_module = module
-        if module == "pyHGT.data" or module == 'data':
-            renamed_module = r"GPT_GNN.data"
-        return super(RenameUnpickler, self).find_class(renamed_module, name)
-def renamed_load(file_obj):
-    return RenameUnpickler(file_obj).load()
+from .utils import download_dataset
 
 # To prepare the dataset, this piece of code need to be run under GPT-GNN's repo
 class OAGDataset(InMemoryDataset):
@@ -60,13 +52,16 @@ class OAGDataset(InMemoryDataset):
             being saved to disk. (default: :obj:`None`)
     """
 
+    urls = {
+        'cs': 'https://drive.google.com/file/d/115WygJhRo1DxVLpLzJF-hFCamGc7JY5w/view?usp=drive_link',
+        'engineering': 'https://drive.google.com/file/d/1_n605385TzqqaVIiMQcKziSv5BUG4f4Y/view?usp=drive_link',
+        'chemistry': 'https://drive.google.com/file/d/1S13pnOk2-bPevWQafl6lQj8QOy6BK7Ca/view?usp=drive_link'
+    }
+
     names = {
-        'art': 'Art',
-        'business': 'Business',
-        'chemistry': 'Chemistry',
         'cs': 'CS_20190919',
         'engineering': 'Engineering',
-        'material': 'Materials_science',
+        'chemistry': 'Chemistry'
     }
 
     def __init__(self, root: str, name: str,
@@ -94,28 +89,28 @@ class OAGDataset(InMemoryDataset):
     def processed_file_names(self) -> str:
         return 'data.pt'
 
-    # def download(self):
-    #     url = self.urls[self.name]
-    #     path = download_url(url, self.raw_dir)
-    #     extract_zip(path, self.raw_dir)
-    #     os.unlink(path)
+    def download(self):
+        url = self.urls[self.name]
+        download_dataset(url, self.raw_dir)
 
     def process(self):
-        graph = renamed_load(open(f'/nobackup/users/junhong/Data/preprocessed_OAG/graph_{self.names[self.name]}.pk', 'rb'))
+        graph = torch.load(os.path.join(self.raw_dir, f'graph_{self.names[self.name]}.pt'))
         
         data = HeteroData()
 
         # Add nodes
-        for idx, node_type in enumerate(graph.node_forward):
+        for idx, node_type in enumerate(graph['node_forward']):
             if node_type == 'venue':
                 continue
-            data[node_type].x = torch.tensor(graph.node_feature[node_type]['emb'].to_list()).to(torch.float)
-        data['paper'].year = torch.tensor(graph.node_feature['paper']['time'].to_list())
+            for i in range(len(graph['node_forward'][node_type])):
+                assert graph['node_forward'][node_type][graph['node_feature'][node_type].iloc[i]['id']] == i
+            data[node_type].x = torch.tensor(np.stack(graph['node_feature'][node_type]['emb'].values), dtype=torch.float)
+        data['paper'].year = torch.tensor(np.stack(graph['node_feature']['paper']['time'].values))
 
         # Add edges
-        for tar in graph.edge_list.keys():
-            for src in graph.edge_list[tar].keys():
-                for rel in graph.edge_list[tar][src].keys():
+        for tar in graph['edge_list'].keys():
+            for src in graph['edge_list'][tar].keys():
+                for rel in graph['edge_list'][tar][src].keys():
                     rel_name = rel
                     if rel.startswith('rev_'):
                         continue
@@ -123,35 +118,36 @@ class OAGDataset(InMemoryDataset):
                         continue
                     # if src == 'author' and tar == 'paper':
                     #     rel_name = 'AP_write'
-                    # Only keep L2 field connections
-                    # if src == 'paper' and tar == 'field' and rel != 'PF_in_L2':
-                    #     continue
-                        # rel_name = 'PF_in'
-                    print((src, rel_name, tar))
+                    # if src == 'paper' and tar == 'field':
+                    #     rel_name = 'PF_in'
+                    print(f'Working on edge type {(src, rel_name, tar)}...')
                     total_edges, cur_edges = 0, 0
-                    for tar_id, items in graph.edge_list[tar][src][rel].items():
+                    for tar_id, items in graph['edge_list'][tar][src][rel].items():
                         total_edges += len(items)
                     edge_index = torch.empty(2, total_edges, dtype=torch.long)
-                    for tar_id, src_ids in graph.edge_list[tar][src][rel].items():
+                    for tar_id, src_ids in graph['edge_list'][tar][src][rel].items():
                         for idx, src_id in enumerate(src_ids.keys()):
                             edge_index[0, idx + cur_edges] = src_id
                             edge_index[1, idx + cur_edges] = tar_id
                         cur_edges += len(src_ids)
-                    if (src, rel_name, tar) in data.edge_types:
+                    
+                    try:
+                        num_edges_dict = data.num_edges_dict
+                    except:
+                        num_edges_dict = []
+                    if (src, rel_name, tar) in num_edges_dict:
                         data[(src, rel_name, tar)].edge_index = torch.cat((data[(src, rel_name, tar)].edge_index, edge_index), dim=1)
                     else:
                         data[(src, rel_name, tar)].edge_index = edge_index
-                        
+        
         # Add label
         src = 'paper'
         tar = 'venue'
         rel = 'PV_Journal' # The classification domain is Jounrnal paper
-        y = torch.empty(len(graph.node_forward['paper']), dtype=torch.long).fill_(-1)
-        # for rel in graph.edge_list[tar][src].keys():
-        graph.edge_list[tar][src][rel]
+        y = torch.empty(len(graph['node_forward']['paper']), dtype=torch.long).fill_(-1)
         count = -1
         count_dict = {}
-        for tar_id, src_ids in graph.edge_list[tar][src][rel].items():
+        for tar_id, src_ids in graph['edge_list'][tar][src][rel].items():
             for idx, src_id in enumerate(src_ids.keys()):
                 idx = count_dict.get(tar_id, count + 1)
                 count_dict[tar_id] = idx
@@ -161,6 +157,7 @@ class OAGDataset(InMemoryDataset):
         data['paper'].train_mask = torch.logical_and(data['paper'].y != -1, data['paper'].year <= 2016)
         data['paper'].val_mask = torch.logical_and(data['paper'].y != -1, torch.logical_and(data['paper'].year >= 2017, data['paper'].year <= 2017))
         data['paper'].test_mask = torch.logical_and(data['paper'].y != -1, data['paper'].year >= 2018)
+        data.validate()
 
         if self.pre_transform is not None:
             data = self.pre_transform(data)

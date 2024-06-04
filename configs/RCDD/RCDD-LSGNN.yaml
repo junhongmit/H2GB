@@ -42,7 +42,7 @@ model:
   graph_pooling: mean
 gnn:
   layers_mp: 3
-  dim_inner: 256  # `gt.dim_hidden` must match `gnn.dim_inner`
+  dim_inner: 256  
   A_embed: False
   dropout: 0.2
   agg: mean

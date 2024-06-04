@@ -23,7 +23,7 @@ from H2GB.datasets.mag_dataset import MAGDataset
 from H2GB.datasets.rcdd_dataset import RCDDDataset
 from H2GB.datasets.pokec_dataset import PokecDataset
 from H2GB.datasets.ieee_cis_dataset import IeeeCisDataset
-from H2GB.datasets.dns_dataset import DNSDataset
+from H2GB.datasets.pdns_dataset import PDNSDataset
 from H2GB.graphgym.config import cfg
 from H2GB.graphgym.loader import load_pyg, load_ogb, set_dataset_attr
 from H2GB.graphgym.register import register_loader
@@ -191,14 +191,11 @@ def load_dataset_master(format, name, dataset_dir):
         elif pyg_dataset_id == 'RCDD':
             dataset = preformat_RCDD(dataset_dir)
 
-        elif pyg_dataset_id == 'CCF':
-            dataset = preformat_CCF(dataset_dir)
-
         elif pyg_dataset_id == 'Pokec':
             dataset = preformat_Pokec(dataset_dir)
 
-        elif pyg_dataset_id == 'DNS':
-            dataset = preformat_DNS(dataset_dir)
+        elif pyg_dataset_id == 'PDNS':
+            dataset = preformat_PDNS(dataset_dir)
         
         else:
             raise ValueError(f"Unexpected PyG Dataset identifier: {format}")
@@ -604,7 +601,7 @@ def preformat_Pokec(dataset_dir):
     return dataset
 
 
-def preformat_DNS(dataset_dir):
+def preformat_PDNS(dataset_dir):
     """Load and preformat DNS datasets.
 
     Args:
@@ -615,7 +612,7 @@ def preformat_DNS(dataset_dir):
     """
     transform = T.ToUndirected()
     start, end = 0, 60
-    dataset = DNSDataset(root=dataset_dir, start=start, end=end,
+    dataset = PDNSDataset(root=dataset_dir, start=start, end=end,
                          domain_file='domains2.csv', transform=transform)
     return dataset
 

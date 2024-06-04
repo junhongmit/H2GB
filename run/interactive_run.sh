@@ -40,7 +40,7 @@ DATASET="oag-chem"
 # run_repeats ${DATASET} LP+2Hop            "name_tag LP+2Hop"
 
 # Homogeneous GNN Baselines
-# run_repeats ${DATASET} GCN                "name_tag GCN"
+run_repeats ${DATASET} GCN                "name_tag GCN"
 # run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
 # run_repeats ${DATASET} GIN                "name_tag GIN"
 # run_repeats ${DATASET} GAT                "name_tag GAT"
@@ -332,7 +332,7 @@ DATASET="mag-year"
 # run_repeats ${DATASET} SGC+2Hop           "name_tag SGC+2Hop"
 
 # Homogeneous GNN Baselines
-run_repeats ${DATASET} GCN                "name_tag GCN"
+# run_repeats ${DATASET} GCN                "name_tag GCN"
 # run_repeats ${DATASET} GCN+LP                "name_tag GCN+LP"
 # run_repeats ${DATASET} GCN+MS                "name_tag GCN+MS"
 # run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
@@ -538,7 +538,7 @@ DATASET="Pokec"
 # run_repeats ${DATASET} SparseNodeGT+Metapath+LP             "name_tag SparseNodeGT+Metapath+LP"
 
 
-DATASET="DNS"
+DATASET="PDNS"
 # run_repeats ${DATASET} MLP                "name_tag MLP"
 # run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
 # run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"

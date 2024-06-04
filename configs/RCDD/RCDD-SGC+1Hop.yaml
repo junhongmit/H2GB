@@ -39,7 +39,6 @@ model:
 gnn:
   alpha: 0.1
   hops: 1
-  layers_post_mp: 1
   dim_inner: 256
 optim:
   clip_grad_norm: True

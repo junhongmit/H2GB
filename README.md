@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="imgs/logo_small.png" width="30%" height="auto"/>
+  <img src="imgs/logo_bg.png" width="30%" height="auto"/>
 </p>
 
 <p align="center">
@@ -12,8 +12,8 @@
 --------------------------------------------------------------------------------
 
 ## Overview
-The Heterophilic and Heterogeneous Graph Benchmark (H$`^2`$GB) is a collection of graph benchmark datasets, data loaders, modular graph transformer framework (UnifiedGT) and evaluators for graph learning.
-The H$`^2`$GB encompasses 9 diverse real-world datasets across 5 domains. Its data loaders are fully compatible with popular graph deep learning framework [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/). They provide automatic dataset downloading, standardized dataset splits, and unified performance evaluation.
+The Heterophilic and Heterogeneous Graph Benchmark (H²GB) is a collection of graph benchmark datasets, data loaders, modular graph transformer framework (UnifiedGT) and evaluators for graph learning.
+The H²GB encompasses 9 diverse real-world datasets across 5 domains. Its data loaders are fully compatible with popular graph deep learning framework [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/). They provide automatic dataset downloading, standardized dataset splits, and unified performance evaluation.
 
 <p align='center'>
   <img src="imgs/flowchart.png" width="80%" height="auto"/>

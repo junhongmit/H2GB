@@ -42,8 +42,8 @@ model:
   graph_pooling: mean
 gnn:
   layers_pre_mp: 0
-  layers_post_mp: 2  # Not used when `gnn.head: san_graph`
-  dim_inner: 512  # `gt.dim_hidden` must match `gnn.dim_inner`
+  layers_post_mp: 2  
+  dim_inner: 512  
   batch_norm: True
   layer_norm: False
   act: relu

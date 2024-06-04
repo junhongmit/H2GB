@@ -43,8 +43,8 @@ model:
 gnn:
   layers_pre_mp: 0
   layers_mp: 2
-  layers_post_mp: 1  # Not used when `gnn.head: san_graph`
-  dim_inner: 64  # `gt.dim_hidden` must match `gnn.dim_inner`
+  layers_post_mp: 1  
+  dim_inner: 64  
   batch_norm: True
   layer_norm: False
   act: relu

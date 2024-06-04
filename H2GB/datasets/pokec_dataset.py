@@ -5,7 +5,12 @@ import pandas as pd
 import torch
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
-from torch_geometric.data import HeteroData, InMemoryDataset
+from torch_geometric.data import (
+    HeteroData,
+    InMemoryDataset,
+    download_url,
+    extract_zip,
+)
 from torch_geometric.utils import index_to_mask
 
 def get_categorical_features(feat_df, cat_cols):
@@ -24,10 +29,6 @@ def normalize(feature_matrix):
     mean = torch.mean(feature_matrix, axis=0)
     stdev = torch.sqrt(torch.sum((feature_matrix - mean)**2, axis=0)/feature_matrix.shape[0]) + 1e-9
     return mean, stdev, (feature_matrix - mean) / stdev
-
-def extract_ids(entry_name, html_data):
-    hrefs = re.findall(r'href="/klub/([^"]+)"', html_data)
-    return [entry_dict[entry_name].get(name) for name in hrefs if name in entry_dict[entry_name]]
 
 class PokecDataset(InMemoryDataset):
     r"""
@@ -70,7 +71,10 @@ class PokecDataset(InMemoryDataset):
             (default: :obj:`False`)
     """
 
-    url = ""
+    urls = [
+        "https://snap.stanford.edu/data/soc-pokec-profiles.txt.gz",
+        "https://snap.stanford.edu/data/soc-pokec-relationships.txt.gz"
+        ]
     
     node_fields = [
         "public",
@@ -199,18 +203,22 @@ class PokecDataset(InMemoryDataset):
         self.data = torch.load(self.processed_paths[0])
 
     @property
+    def raw_dir(self) -> str:
+        return osp.join(self.root, 'raw')
+
+    @property
     def raw_file_names(self):
-        return ["soc-pokec-profiles.txt.gz", "soc-pokec-relationships.txt.gz", "embedding.pt", "emb_items.pt"]
+        return ["soc-pokec-profiles.txt.gz", "soc-pokec-relationships.txt.gz"]
 
     @property
     def processed_file_names(self):
         return ["data.pt"]
 
     def download(self):
-        raise RuntimeError(
-            f"Dataset not found. Please download {self.raw_file_names} from "
-            f"'{self.url}' and move it to '{self.raw_dir}'"
-        )
+        if not all([osp.exists(f) for f in self.raw_paths]):
+            for url in self.urls:
+                path = download_url(url, self.raw_dir)
+                extract_zip(path, self.raw_dir)
 
     def process(self):
         dfn = pd.read_csv(self.raw_paths[0], sep = "\t", names = self.node_fields, nrows = None)
@@ -234,6 +242,10 @@ class PokecDataset(InMemoryDataset):
                     hrefs = re.findall(r'href="/klub/([^"]+)"', line)
                     entry_set |= set(hrefs)
             entry_dict[column] = {entry: idx for idx, entry in enumerate(entry_set)}
+
+        def extract_ids(entry_name, html_data):
+            hrefs = re.findall(r'href="/klub/([^"]+)"', html_data)
+            return [entry_dict[entry_name].get(name) for name in hrefs if name in entry_dict[entry_name]]
 
         edge_index_dict = {}
         for column in self.edge_features:
@@ -280,14 +292,8 @@ class PokecDataset(InMemoryDataset):
         data['user'].num_nodes = len(dfn)
         data['user'].y = torch.tensor(dfn['gender'].fillna(-1).values, dtype=torch.long)
         data['user'].x = torch.cat((user_num_feats, user_cat_feats, user_text_feats), dim=-1)
-        # all_item_dict = torch.load('/nobackup/users/junhong/Data/pokec/emb_items.pt')
-        # for column, emb_dict in all_item_dict.items():
-        #     x = torch.zeros((len(emb_dict), 768))
-        #     for name, emb in emb_dict.items():
-        #         x[entry_dict[column].get(name)] = torch.from_numpy(emb)
-
-        #     data[column].num_nodes = len(entry_dict[column])
-        #     data[column].x = x
+        for column, entry in entry_dict.items():
+            data[column].num_nodes = len(entry_dict[column])
 
         source_tensor = torch.tensor(dfe['source'].values - 1, dtype=torch.long)
         target_tensor = torch.tensor(dfe['target'].values - 1, dtype=torch.long)

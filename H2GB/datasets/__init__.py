@@ -3,7 +3,7 @@ from .oag_dataset import OAGDataset
 from .rcdd_dataset import RCDDDataset
 from .ieee_cis_dataset import IeeeCisDataset
 from .pokec_dataset import PokecDataset
-from .dns_dataset import DNSDataset
+from .pdns_dataset import PDNSDataset
 
 
 __all__ = classes = [
@@ -12,5 +12,5 @@ __all__ = classes = [
     'RCDDDataset',
     'IeeeCisDataset',
     'PokecDataset',
-    'DNSDataset',
+    'PDNSDataset',
 ]

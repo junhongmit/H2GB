@@ -16,17 +16,17 @@ Tensor Objects
 Functions
 ---------
 
-.. automodule:: H2GB.seed
-    :members:
+.. .. automodule:: H2GB.seed
+..     :members:
 
-.. automodule:: H2GB.home
-    :members:
+.. .. automodule:: H2GB.home
+..     :members:
 
-.. automodule:: H2GB.compile
-    :members:
+.. .. automodule:: H2GB.compile
+..     :members:
 
-.. automodule:: H2GB.debug
-    :members:
+.. .. automodule:: H2GB.debug
+..     :members:
 
-.. automodule:: H2GB.experimental
-    :members:
+.. .. automodule:: H2GB.experimental
+..     :members:

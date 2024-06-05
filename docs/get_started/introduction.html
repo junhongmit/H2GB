@@ -57,6 +57,7 @@
 <p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction by Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#heterophilic-and-heterogeneous-graph-datasets">Heterophilic and Heterogeneous Graph Datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#data-handling-of-graphs">Data Handling of Graphs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#common-benchmark-datasets">Common Benchmark Datasets</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#mini-batches">Mini-batches</a></li>
@@ -69,6 +70,7 @@
 <p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">H2GB.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/layer.html">H²GB</a></li>
 </ul>
 
         </div>
@@ -97,22 +99,32 @@
              
   <section id="introduction-by-example">
 <h1>Introduction by Example<a class="headerlink" href="#introduction-by-example" title="Permalink to this heading"></a></h1>
-<p>We shortly introduce the fundamental concepts of <span class="inline-logo pyg">PyG</span> through self-contained examples.</p>
-<p>For an introduction to Graph Machine Learning, we refer the interested reader to the <a href="#id1"><span class="problematic" id="id2">:stanford:`null`</span></a> <a class="reference external" href="https://www.youtube.com/watch?v=JAB_plj2rbA">Stanford CS224W: Machine Learning with Graphs</a> lectures.
-For an interactive introduction to <span class="inline-logo pyg">PyG</span>, we recommend our carefully curated <a href="#id3"><span class="problematic" id="id4">:colab:`null`</span></a> <a class="reference external" href="colabs.html">Google Colab</a> notebooks.</p>
-<p>At its core, <span class="inline-logo pyg">PyG</span> provides the following main features:</p>
+<p>We shortly introduce the datasets provided by <span class="inline-logo h2gb">H²GB</span> and the versatile <span class="inline-logo unifiedgt">UnifiedGT</span> framework through self-contained examples.</p>
+<p>For an introduction to Graph Machine Learning, we refer the interested reader to the <span class="inline-logo stanford empty"></span> <a class="reference external" href="https://www.youtube.com/watch?v=JAB_plj2rbA">Stanford CS224W: Machine Learning with Graphs</a> lectures.</p>
+<p>At its core, <span class="inline-logo h2gb">H²GB</span> provides the following main features:</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#data-handling-of-graphs" id="id5">Data Handling of Graphs</a></p></li>
-<li><p><a class="reference internal" href="#common-benchmark-datasets" id="id6">Common Benchmark Datasets</a></p></li>
-<li><p><a class="reference internal" href="#mini-batches" id="id7">Mini-batches</a></p></li>
-<li><p><a class="reference internal" href="#data-transforms" id="id8">Data Transforms</a></p></li>
-<li><p><a class="reference internal" href="#learning-methods-on-graphs" id="id9">Learning Methods on Graphs</a></p></li>
-<li><p><a class="reference internal" href="#exercises" id="id10">Exercises</a></p></li>
+<li><p><a class="reference internal" href="#heterophilic-and-heterogeneous-graph-datasets" id="id1">Heterophilic and Heterogeneous Graph Datasets</a></p></li>
+<li><p><a class="reference internal" href="#data-handling-of-graphs" id="id2">Data Handling of Graphs</a></p></li>
+<li><p><a class="reference internal" href="#common-benchmark-datasets" id="id3">Common Benchmark Datasets</a></p></li>
+<li><p><a class="reference internal" href="#mini-batches" id="id4">Mini-batches</a></p></li>
+<li><p><a class="reference internal" href="#data-transforms" id="id5">Data Transforms</a></p></li>
+<li><p><a class="reference internal" href="#learning-methods-on-graphs" id="id6">Learning Methods on Graphs</a></p></li>
+<li><p><a class="reference internal" href="#exercises" id="id7">Exercises</a></p></li>
 </ul>
 </nav>
+<section id="heterophilic-and-heterogeneous-graph-datasets">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Heterophilic and Heterogeneous Graph Datasets</a><a class="headerlink" href="#heterophilic-and-heterogeneous-graph-datasets" title="Permalink to this heading"></a></h2>
+<p>Many real-world graphs, such as academic networks, social networks and financial networks, frequently present challenges for graph learning due to <em>heterophily</em>, where connected nodes may have dissimilar labels and attributes, and <em>heterogeneity</em>, where multiple types of entities and relations among the graphs are embodied by various types of nodes and edges. Each of these two properties can significantly impede the performance of graph learning models.
+While there have been advancements in handling graph with heterophily and heterogeneity seperately, there is a lack of research on learning on graphs with both of these two properties, which many real-world graphs have. For example, financial networks (subfigure (d)) are both heterophilic and heterogeneous. Different node types (person, business, etc.) and edge types (wire transfer, credit card transaction, etc.) exist, making the graph heterogeneous.
+The class labels of fraudsters differ from those of their innocent neighbors, making the graph heterophilic. There are also many graphs from other domains that are both heterophilic and heterogeneous, such as networks from e-commerce, academia, and cybersecurity.</p>
+<img alt="../_images/example.png" class="align-center" src="../_images/example.png" />
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+</section>
 <section id="data-handling-of-graphs">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink">Data Handling of Graphs</a><a class="headerlink" href="#data-handling-of-graphs" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Data Handling of Graphs</a><a class="headerlink" href="#data-handling-of-graphs" title="Permalink to this heading"></a></h2>
 <p>A graph is used to model pairwise relations (edges) between objects (nodes).
 A single graph in <span class="inline-logo pyg">PyG</span> is described by an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">torch_geometric.data.Data</span></code>, which holds the following attributes by default:</p>
 <ul class="simple">
@@ -216,7 +228,7 @@ You can always check that your final <code class="xref py py-class docutils lite
 <p>You can find a complete list of all methods at <code class="xref py py-class docutils literal notranslate"><span class="pre">torch_geometric.data.Data</span></code>.</p>
 </section>
 <section id="common-benchmark-datasets">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">Common Benchmark Datasets</a><a class="headerlink" href="#common-benchmark-datasets" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Common Benchmark Datasets</a><a class="headerlink" href="#common-benchmark-datasets" title="Permalink to this heading"></a></h2>
 <p><span class="inline-logo pyg">PyG</span> contains a large number of common benchmark datasets, <em>e.g.</em>, all Planetoid datasets (Cora, Citeseer, Pubmed), all graph classification datasets from <a class="reference external" href="https://chrsmrrs.github.io/datasets/">TUDatasets</a> and their <a class="reference external" href="https://github.com/nd7141/graph_datasets">cleaned versions</a>, the QM7 and QM9 dataset, and a handful of 3D mesh/point cloud datasets like FAUST, ModelNet10/40 and ShapeNet.</p>
 <p>Initializing a dataset is straightforward.
 An initialization of a dataset will automatically download its raw files and process them to the previously described <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> format.
@@ -309,7 +321,7 @@ In addition, the data object is holding exactly one graph-level target.</p>
 </ul>
 </section>
 <section id="mini-batches">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">Mini-batches</a><a class="headerlink" href="#mini-batches" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Mini-batches</a><a class="headerlink" href="#mini-batches" title="Permalink to this heading"></a></h2>
 <p>Neural networks are usually trained in a batch-wise fashion.
 <span class="inline-logo pyg">PyG</span> achieves parallelization over a mini-batch by creating sparse block diagonal adjacency matrices (defined by <code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_index</span></code>) and concatenating feature and target matrices in the node dimension.
 This composition allows differing number of nodes and edges over examples in one batch:</p>
@@ -359,7 +371,7 @@ Let’s learn about it in an example:</p>
 For documentation of scatter operations, we refer the interested reader to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">torch_scatter</span></code> <a class="reference external" href="https://pytorch-scatter.readthedocs.io">documentation</a>.</p>
 </section>
 <section id="data-transforms">
-<h2><a class="toc-backref" href="#id8" role="doc-backlink">Data Transforms</a><a class="headerlink" href="#data-transforms" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Data Transforms</a><a class="headerlink" href="#data-transforms" title="Permalink to this heading"></a></h2>
 <p>Transforms are a common way in <code class="xref py py-obj docutils literal notranslate"><span class="pre">torchvision</span></code> to transform images and perform augmentation.
 <span class="inline-logo pyg">PyG</span> comes with its own transforms, which expect a <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> object as input and return a new transformed <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> object.
 Transforms can be chained together using <code class="xref py py-class docutils literal notranslate"><span class="pre">torch_geometric.transforms.Compose</span></code> and are applied before saving a processed dataset on disk (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pre_transform</span></code>) or before accessing a graph in a dataset (<code class="xref py py-obj docutils literal notranslate"><span class="pre">transform</span></code>).</p>
@@ -404,7 +416,7 @@ If the <code class="xref py py-obj docutils literal notranslate"><span class="pr
 <p>You can find a complete list of all implemented transforms at <code class="xref py py-mod docutils literal notranslate"><span class="pre">torch_geometric.transforms</span></code>.</p>
 </section>
 <section id="learning-methods-on-graphs">
-<h2><a class="toc-backref" href="#id9" role="doc-backlink">Learning Methods on Graphs</a><a class="headerlink" href="#learning-methods-on-graphs" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Learning Methods on Graphs</a><a class="headerlink" href="#learning-methods-on-graphs" title="Permalink to this heading"></a></h2>
 <p>After learning about data handling, datasets, loader and transforms in <span class="inline-logo pyg">PyG</span>, it’s time to implement our first graph neural network!</p>
 <p>We will use a simple GCN layer and replicate the experiments on the Cora citation dataset.
 For a high-level explanation on GCN, have a look at its <a class="reference external" href="http://tkipf.github.io/graph-convolutional-networks/">blog post</a>.</p>
@@ -470,7 +482,7 @@ The easiest way to learn more about Graph Neural Networks is to study the exampl
 Happy hacking!</p>
 </section>
 <section id="exercises">
-<h2><a class="toc-backref" href="#id10" role="doc-backlink">Exercises</a><a class="headerlink" href="#exercises" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id7" role="doc-backlink">Exercises</a><a class="headerlink" href="#exercises" title="Permalink to this heading"></a></h2>
 <ol class="arabic">
 <li><p>What does <code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_index.t().contiguous()</span></code> do?</p></li>
 <li><p>Load the <code class="xref py py-obj docutils literal notranslate"><span class="pre">&quot;IMDB-BINARY&quot;</span></code> dataset from the <code class="xref py py-class docutils literal notranslate"><span class="pre">TUDataset</span></code> benchmark suite and randomly split it into 80%/10%/10% training, validation and test graphs.</p></li>

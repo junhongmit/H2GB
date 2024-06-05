@@ -1,15 +1,28 @@
 Introduction by Example
 =======================
 
-We shortly introduce the fundamental concepts of :pyg:`PyG` through self-contained examples.
+We shortly introduce the datasets provided by :h2gb:`H²GB` and the versatile :unifiedgt:`UnifiedGT` framework through self-contained examples.
 
 For an introduction to Graph Machine Learning, we refer the interested reader to the :stanford:`null` `Stanford CS224W: Machine Learning with Graphs <https://www.youtube.com/watch?v=JAB_plj2rbA>`__ lectures.
-For an interactive introduction to :pyg:`PyG`, we recommend our carefully curated :colab:`null` `Google Colab <colabs.html>`__ notebooks.
 
-At its core, :pyg:`PyG` provides the following main features:
+At its core, :h2gb:`H²GB` provides the following main features:
 
 .. contents::
     :local:
+
+Heterophilic and Heterogeneous Graph Datasets
+---------------------------------------------
+
+Many real-world graphs, such as academic networks, social networks and financial networks, frequently present challenges for graph learning due to *heterophily*, where connected nodes may have dissimilar labels and attributes, and *heterogeneity*, where multiple types of entities and relations among the graphs are embodied by various types of nodes and edges. Each of these two properties can significantly impede the performance of graph learning models.
+While there have been advancements in handling graph with heterophily and heterogeneity seperately, there is a lack of research on learning on graphs with both of these two properties, which many real-world graphs have. For example, financial networks (subfigure (d)) are both heterophilic and heterogeneous. Different node types (person, business, etc.) and edge types (wire transfer, credit card transaction, etc.) exist, making the graph heterogeneous.
+The class labels of fraudsters differ from those of their innocent neighbors, making the graph heterophilic. There are also many graphs from other domains that are both heterophilic and heterogeneous, such as networks from e-commerce, academia, and cybersecurity.
+
+.. image:: ../_static/example.png
+  :align: center
+
+|
+
+In :h2gb:`H²GB`, we provide 9 diverse real-world datasets across 5 domains -- academia, finance, e-commerce, social science, and cybersecurity.
 
 Data Handling of Graphs
 -----------------------

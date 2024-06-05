@@ -1,0 +1,2 @@
+[console_scripts]
+h2gb_train = H2GB.main:run

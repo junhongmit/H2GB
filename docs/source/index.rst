@@ -12,7 +12,7 @@ across 5 domains. Its data loaders are fully compatible with popular graph deep 
 :pyg:`null` PyTorch Geometric. They provide automatic dataset downloading, standardized dataset splits,
 and unified performance evaluation.
 
-.. image:: ./_static/flowchart.png
+.. image:: ./_static/flowchart_v2_color.png
   :align: center
 
 |
@@ -29,36 +29,22 @@ and unified performance evaluation.
 
    get_started/introduction
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Tutorials
+.. .. toctree::
+..    :maxdepth: 1
+..    :caption: Tutorials
 
-   .. tutorial/gnn_design
-   .. tutorial/dataset
-   .. tutorial/application
-   .. tutorial/distributed
+..    tutorial/gnn_design
+..    tutorial/dataset
+..    tutorial/application
+..    tutorial/distributed
 
 .. toctree::
    :maxdepth: 1
    :caption: Package Reference
 
    modules/datasets
-   .. modules/sampler
-   .. modules/encoder
-   .. modules/network
-   .. modules/head
+   modules/layer
    
-
-   .. modules/data
-   .. modules/loader
-   .. modules/transforms
-   .. modules/utils
-   .. modules/explain
-   .. modules/metrics
-   .. modules/distributed
-   .. modules/contrib
-   .. modules/graphgym
-   .. modules/profile
 
 Indices and tables
 ==================

@@ -1,4 +1,4 @@
-out_dir: /nobackup/users/junhong/Logs/results
+out_dir: /nobackup/users/junhong/Logs/results/IEEE-CIS
 metric_best: f1
 seed: 42
 wandb:

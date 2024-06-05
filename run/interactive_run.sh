@@ -16,7 +16,7 @@ function run_repeats {
         return 1
     fi
 
-    main="python main.py --cfg ${cfg_file}"
+    main="python -m H2GB.main --cfg ${cfg_file}"
     out_dir="/nobackup/users/junhong/Logs/results/${dataset}"  # <-- Set the output dir.
     common_params="out_dir ${out_dir} ${cfg_overrides}"
 
@@ -40,7 +40,7 @@ DATASET="oag-chem"
 # run_repeats ${DATASET} LP+2Hop            "name_tag LP+2Hop"
 
 # Homogeneous GNN Baselines
-run_repeats ${DATASET} GCN                "name_tag GCN"
+# run_repeats ${DATASET} GCN                "name_tag GCN"
 # run_repeats ${DATASET} GraphSAGE          "name_tag GraphSAGE"
 # run_repeats ${DATASET} GIN                "name_tag GIN"
 # run_repeats ${DATASET} GAT                "name_tag GAT"
@@ -78,7 +78,7 @@ run_repeats ${DATASET} GCN                "name_tag GCN"
 # run_repeats ${DATASET} SAGE-SAGE+GT       "name_tag SAGE-SAGE+GT+TypeFFN"
 
 DATASET="oag-cs"
-# run_repeats ${DATASET} MLP                "name_tag MLP"
+run_repeats ${DATASET} MLP                "name_tag MLP"
 # run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
 # run_repeats ${DATASET} MLP+Node2Vec         "name_tag MLP+Node2Vec"
 # run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"

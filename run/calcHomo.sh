@@ -15,7 +15,7 @@ function calc_homophily {
         return 1
     fi
 
-    main="python calcHomophily.py --cfg ${cfg_file}"
+    main="python -m H2GB.calcHomophily --cfg ${cfg_file}"
     out_dir="/nobackup/users/junhong/Logs/results/${dataset}/homophily.log"  # <-- Set the output dir.
 
     echo "Run program: ${main} > ${out_dir}"
@@ -28,11 +28,15 @@ function calc_homophily {
 }
 
 cfg_dir="configs"
+
+# Uncomment the dataset that you want to calculate homophily
+
 # calc_homophily  ogbn-mag  MLP
-calc_homophily  mag-year  MLP
+# calc_homophily  mag-year  MLP
 # calc_homophily  oag-chem  MLP
 # calc_homophily  oag-cs  MLP
 # calc_homophily  oag-eng  MLP
 # calc_homophily  RCDD  MLP
 # calc_homophily  IEEE-CIS  MLP
-# calc_homophily  CCF  MLP
+# calc_homophily  Pokec  MLP
+# calc_homophily  PDNS  MLP

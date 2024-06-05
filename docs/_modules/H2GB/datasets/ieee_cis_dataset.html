@@ -83,12 +83,14 @@
            <div itemprop="articleBody">
              
   <h1>Source code for H2GB.datasets.ieee_cis_dataset</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span></span><span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">HeteroData</span><span class="p">,</span> <span class="n">InMemoryDataset</span>
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">download_dataset</span>
 
 
 <span class="n">DEFAULT_NON_TARGET_NODE_TYPES</span> <span class="o">=</span> <span class="p">[</span>
@@ -184,10 +186,11 @@
 
 
 <div class="viewcode-block" id="IeeeCisDataset"><a class="viewcode-back" href="../../../generated/H2GB.datasets.IeeeCisDataset.html#H2GB.datasets.IeeeCisDataset">[docs]</a><span class="k">class</span> <span class="nc">IeeeCisDataset</span><span class="p">(</span><span class="n">InMemoryDataset</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    IEEE-CIS-G is a heterogeneous financial network extracted from a tabular</span>
 <span class="sd">    transaction dataset from `IEEE-CIS Fraud Detection Kaggle Competition</span>
 <span class="sd">    &lt;https://kaggle.com/competitions/ieee-fraud-detection&gt;`_.</span>
+<span class="sd">    </span>
 <span class="sd">    The original dataset contains credit card transactions provided by Vesta</span>
 <span class="sd">    Corporation, a leading payment service company whose data consists of</span>
 <span class="sd">    verified transactions. We defined a bipartite graph structure based on</span>
@@ -224,7 +227,7 @@
 <span class="sd">            (default: :obj:`False`)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://www.kaggle.com/c/ieee-fraud-detection/data&quot;</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://drive.google.com/file/d/1JBrvglTqeidTgl5ElaRjAgIPCc6udyyL/view?usp=drive_link&quot;</span>
     <span class="n">exclude_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;TransactionID&quot;</span><span class="p">,</span> <span class="s2">&quot;isFraud&quot;</span><span class="p">,</span> <span class="s2">&quot;TransactionDT&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -259,10 +262,8 @@
         <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;data.pt&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Dataset not found. Please download </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_file_names</span><span class="si">}</span><span class="s2"> from &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">&#39; and move it to &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_dir</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">osp</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_paths</span><span class="p">]):</span>
+            <span class="n">download_dataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">train_transaction_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>

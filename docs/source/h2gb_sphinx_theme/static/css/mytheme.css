@@ -357,6 +357,10 @@ span.inline-logo.h2gb {
   padding-left: 28px;
   background-image: url(../img/h2gb_logo.svg);
 }
+span.inline-logo.unifiedgt {
+  padding-left: 28px;
+  background-image: url(../img/unifiedgt_logo.svg);
+}
 span.inline-logo.graphgym {
   padding-left: 28px;
   background-image: url(../img/graphgym_logo.png);

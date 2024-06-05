@@ -4,7 +4,7 @@
 
 <p align="center">
 	<a href=""><img src="https://img.shields.io/badge/arXiv-pdf-yellowgreen"></a>
-	<a href="https://pypi.org/project/py-tgb/"><img src="https://img.shields.io/pypi/v/py-tgb.svg?color=brightgreen"></a>
+	<a href="https://pypi.org/project/H2GB/"><img src="https://img.shields.io/pypi/v/H2GB.svg?color=brightgreen"></a>
 	<a href="https://github.com/junhongmit/H2GB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
 	<a href="https://junhongmit.github.io/H2GB/"><img src="https://img.shields.io/badge/Documentations-orange"></a>
 </p>
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ```
 
 ## Run the UnifiedGT
-`UnifiedGT` is a modular graph transformer framework that  designed to encompass many existing GTs and GNNs by leveraging unified components: (1) graph sampling, (2) graph encoding, (3) graph attention, (4) attention masking, and (5) feedforward networks (FFN). It is implemented as a Python library and is user-friendly. It includes a unified data loader and evaluator, making it easy for researchers to access datasets, evaluate methods, and compare performance.
+To summarize and systematically compare the performance of existing GNNs on `H2GB`, we designed `UnifiedGT`. `UnifiedGT` is a modular graph transformer framework that  designed to encompass many existing GTs and GNNs by leveraging unified components: (1) graph sampling, (2) graph encoding, (3) graph attention, (4) attention masking, and (5) feedforward networks (FFN). It is implemented as a Python library and is user-friendly. It includes a unified data loader and evaluator, making it easy for researchers to access datasets, evaluate methods, and compare performance.
 
 <p align='center'>
   <img src="https://raw.githubusercontent.com/junhongmit/H2GB/main/imgs/framework.png" width="80%" height="auto"/>
@@ -65,7 +65,7 @@ For example, the following command is to run `MLP` model experiment for `oag-cs`
 python -m H2GB.main --cfg configs/oag-cs/oag-cs-MLP.yaml name_tag MLP
 ```
 
-# Caclulate the Metapath-Induced Adjusted Heterophily Measurement
+## Caclulate the Metapath-Induced Adjusted Heterophily Measurement
 We provide a extended heterophily measurement from homogeneous grpah into the heterogeneous setting, which is called metapath-induced heterophily measrement. The calcualtion function is available in `./H2GB/calcHomophily.py`. You can simply import it by using `from H2GB.calcHomophily import calcHomophily` and measure the heterophily of your data. For convenience, we also provide a script to reproduce the heterophily measurement on our developed datasets. Note that $$\text{Heterophily} = 1 - \text{Homophily}$$ So just do a simple transformation to obtain the heterophily.
 ```
 chmox +x ./run/calcHomo.sh

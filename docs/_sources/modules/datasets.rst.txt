@@ -18,6 +18,7 @@ Heterophilic and Heterogeneous Datasets
      {{ name }}
    {% endfor %}
 
+
 Datasets by Domains
 -------------------
 
@@ -36,6 +37,7 @@ Academia
      {{ name }}
    {% endfor %}
 
+
 .. _finance:
 Finace
 ^^^^^^
@@ -51,6 +53,7 @@ Finace
      {{ name }}
    {% endfor %}
 
+
 .. _ecommerce:
 E-commerce
 ^^^^^^^^^^
@@ -65,6 +68,7 @@ E-commerce
    {% for name in H2GB.datasets.ecommerce_datasets %}
      {{ name }}
    {% endfor %}
+
 
 .. _social:
 Social Science

@@ -58,19 +58,18 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction by Example</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#heterophilic-and-heterogeneous-graph-datasets">Heterophilic and Heterogeneous Graph Datasets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dataset-loading">Dataset Loading</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#data-handling-of-graphs">Data Handling of Graphs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#common-benchmark-datasets">Common Benchmark Datasets</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#mini-batches">Mini-batches</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#data-transforms">Data Transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#learning-methods-on-graphs">Learning Methods on Graphs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#exercises">Exercises</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#access-datasets">Access Datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#running-experiments">Running Experiments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#make-use-of-modular-ingredients">Make Use of Modular Ingredients</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#metric-selection">Metric Selection</a></li>
 </ul>
 </li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">H2GB.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/sampler.html">H2GB.sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/encoder.html">H2GB.encoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/layer.html">H²GB</a></li>
 </ul>
 
@@ -105,27 +104,41 @@
 <p>At its core, <span class="inline-logo h2gb">ℋ²GB</span> provides the following main features:</p>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#heterophilic-and-heterogeneous-graph-datasets" id="id1">Heterophilic and Heterogeneous Graph Datasets</a></p></li>
-<li><p><a class="reference internal" href="#dataset-loading" id="id2">Dataset Loading</a></p></li>
-<li><p><a class="reference internal" href="#data-handling-of-graphs" id="id3">Data Handling of Graphs</a></p></li>
-<li><p><a class="reference internal" href="#common-benchmark-datasets" id="id4">Common Benchmark Datasets</a></p></li>
-<li><p><a class="reference internal" href="#mini-batches" id="id5">Mini-batches</a></p></li>
-<li><p><a class="reference internal" href="#data-transforms" id="id6">Data Transforms</a></p></li>
-<li><p><a class="reference internal" href="#learning-methods-on-graphs" id="id7">Learning Methods on Graphs</a></p></li>
-<li><p><a class="reference internal" href="#exercises" id="id8">Exercises</a></p></li>
+<li><p><a class="reference internal" href="#heterophilic-and-heterogeneous-graph-datasets" id="id3">Heterophilic and Heterogeneous Graph Datasets</a></p></li>
+<li><p><a class="reference internal" href="#access-datasets" id="id4">Access Datasets</a></p></li>
+<li><p><a class="reference internal" href="#running-experiments" id="id5">Running Experiments</a></p></li>
+<li><p><a class="reference internal" href="#make-use-of-modular-ingredients" id="id6">Make Use of Modular Ingredients</a></p>
+<ul>
+<li><p><a class="reference internal" href="#graph-sampling" id="id7">Graph Sampling</a></p></li>
+<li><p><a class="reference internal" href="#graph-encoding" id="id8">Graph Encoding</a></p></li>
+<li><p><a class="reference internal" href="#graph-attention" id="id9">Graph Attention</a></p></li>
+<li><p><a class="reference internal" href="#attention-masking" id="id10">Attention Masking</a></p></li>
+<li><p><a class="reference internal" href="#feedforward-networks-ffns" id="id11">Feedforward Networks (FFNs)</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#metric-selection" id="id12">Metric Selection</a></p>
+<ul>
+<li><p><a class="reference internal" href="#binary-classification" id="id13">Binary Classification</a></p></li>
+<li><p><a class="reference internal" href="#multi-class-classification" id="id14">Multi-class Classification</a></p></li>
+<li><p><a class="reference internal" href="#multi-label-classification" id="id15">Multi-label Classification</a></p></li>
+</ul>
+</li>
 </ul>
 </nav>
 <section id="heterophilic-and-heterogeneous-graph-datasets">
-<h2><a class="toc-backref" href="#id1" role="doc-backlink">Heterophilic and Heterogeneous Graph Datasets</a><a class="headerlink" href="#heterophilic-and-heterogeneous-graph-datasets" title="Permalink to this heading"></a></h2>
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Heterophilic and Heterogeneous Graph Datasets</a><a class="headerlink" href="#heterophilic-and-heterogeneous-graph-datasets" title="Permalink to this heading"></a></h2>
 <p>Many real-world graphs, such as academic networks, social networks and financial networks, frequently present challenges for graph learning due to <em>heterophily</em>, where connected nodes may have dissimilar labels and attributes, and <em>heterogeneity</em>, where multiple types of entities and relations among the graphs are embodied by various types of nodes and edges. Each of these two properties can significantly impede the performance of graph learning models.
 While there have been advancements in handling graph with heterophily and heterogeneity seperately, there is a lack of research on learning on graphs with both of these two properties, which many real-world graphs have. For example, financial networks (subfigure (d)) are both heterophilic and heterogeneous. Different node types (person, business, etc.) and edge types (wire transfer, credit card transaction, etc.) exist, making the graph heterogeneous.
 The class labels of fraudsters differ from those of their innocent neighbors, making the graph heterophilic. There are also many graphs from other domains that are both heterophilic and heterogeneous, such as networks from e-commerce, academia, and cybersecurity.</p>
 <img alt="../_images/example.png" class="align-center" src="../_images/example.png" />
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
 <p>In <span class="inline-logo h2gb">ℋ²GB</span>, we provide 9 diverse real-world datasets across 5 domains – academia, finance, e-commerce, social science, and cybersecurity.</p>
 <p><a class="reference external" href="../modules/datasets.html#academia"><img alt="pic1" src="../_images/domain_academia.png" style="width: 19%;" /></a> <a class="reference external" href="../modules/datasets.html#finace"><img alt="pic2" src="../_images/domain_finace.png" style="width: 19%;" /></a> <a class="reference external" href="../modules/datasets.html#ecommerce"><img alt="pic3" src="../_images/domain_ecommerce.png" style="width: 19%;" /></a> <a class="reference external" href="../modules/datasets.html#social"><img alt="pic4" src="../_images/domain_social.png" style="width: 19%;" /></a> <a class="reference external" href="../modules/datasets.html#cybersecurity"><img alt="pic5" src="../_images/domain_cybersecurity.png" style="width: 19%;" /></a></p>
 </section>
-<section id="dataset-loading">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink">Dataset Loading</a><a class="headerlink" href="#dataset-loading" title="Permalink to this heading"></a></h2>
+<section id="access-datasets">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Access Datasets</a><a class="headerlink" href="#access-datasets" title="Permalink to this heading"></a></h2>
 <p>Datasets can be easily loaded through the <code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dataset()</span></code> method. <span class="inline-logo h2gb">ℋ²GB</span> is gloablly configured by an internal
 config tree. In the following example, we demonstrate that by loading an external <code class="xref py py-obj docutils literal notranslate"><span class="pre">mag-year-MLP</span></code> configuration file, you
 are able to access the <code class="xref py py-obj docutils literal notranslate"><span class="pre">mag-year</span></code> dataset.</p>
@@ -158,376 +171,179 @@ without the need to load an external configuration file.</p>
 </pre></div>
 </div>
 </section>
-<section id="data-handling-of-graphs">
-<h2><a class="toc-backref" href="#id3" role="doc-backlink">Data Handling of Graphs</a><a class="headerlink" href="#data-handling-of-graphs" title="Permalink to this heading"></a></h2>
-<p>A graph is used to model pairwise relations (edges) between objects (nodes).
-A single graph in <span class="inline-logo pyg">PyG</span> is described by an instance of <code class="xref py py-class docutils literal notranslate"><span class="pre">torch_geometric.data.Data</span></code>, which holds the following attributes by default:</p>
-<ul class="simple">
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">data.x</span></code>: Node feature matrix with shape <code class="xref py py-obj docutils literal notranslate"><span class="pre">[num_nodes,</span> <span class="pre">num_node_features]</span></code></p></li>
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">data.edge_index</span></code>: Graph connectivity in <a class="reference external" href="https://pytorch.org/docs/stable/sparse.html#sparse-coo-docs">COO format</a> with shape <code class="xref py py-obj docutils literal notranslate"><span class="pre">[2,</span> <span class="pre">num_edges]</span></code> and type <code class="xref py py-obj docutils literal notranslate"><span class="pre">torch.long</span></code></p></li>
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">data.edge_attr</span></code>: Edge feature matrix with shape <code class="xref py py-obj docutils literal notranslate"><span class="pre">[num_edges,</span> <span class="pre">num_edge_features]</span></code></p></li>
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">data.y</span></code>: Target to train against (may have arbitrary shape), <em>e.g.</em>, node-level targets of shape <code class="xref py py-obj docutils literal notranslate"><span class="pre">[num_nodes,</span> <span class="pre">*]</span></code> or graph-level targets of shape <code class="xref py py-obj docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">*]</span></code></p></li>
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">data.pos</span></code>: Node position matrix with shape <code class="xref py py-obj docutils literal notranslate"><span class="pre">[num_nodes,</span> <span class="pre">num_dimensions]</span></code></p></li>
-</ul>
-<p>None of these attributes are required.
-In fact, the <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> object is not even restricted to these attributes.
-We can, <em>e.g.</em>, extend it by <code class="xref py py-obj docutils literal notranslate"><span class="pre">data.face</span></code> to save the connectivity of triangles from a 3D mesh in a tensor with shape <code class="xref py py-obj docutils literal notranslate"><span class="pre">[3,</span> <span class="pre">num_faces]</span></code> and type <code class="xref py py-obj docutils literal notranslate"><span class="pre">torch.long</span></code>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><span class="inline-logo pytorch">PyTorch</span> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">torchvision</span></code> define an example as a tuple of an image and a target.
-We omit this notation in <span class="inline-logo pyg">PyG</span> to allow for various data structures in a clean and understandable way.</p>
-</div>
-<p>We show a simple example of an unweighted and undirected graph with three nodes and four edges.
-Each node contains exactly one feature:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">Data</span>
-
-<span class="n">edge_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
-                           <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-
-<span class="n">data</span> <span class="o">=</span> <span class="n">Data</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">edge_index</span><span class="o">=</span><span class="n">edge_index</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Data</span><span class="p">(</span><span class="n">edge_index</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<section id="running-experiments">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Running Experiments</a><a class="headerlink" href="#running-experiments" title="Permalink to this heading"></a></h2>
+<p>Experiments are configued by configuration files available in <code class="xref py py-obj docutils literal notranslate"><span class="pre">/configs</span></code> and are easy to reproduce.
+Before reproducing experiments, you will need to firstly specify the dataset and log locations by editing the config file provided under <code class="xref py py-obj docutils literal notranslate"><span class="pre">/configs/{dataset_name}/</span></code>. An example configuration is</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>......
+out_dir: ./results/{Model Name} # Put your log output path here
+dataset:
+dir: ./data # Put your input data path here
+......
 </pre></div>
 </div>
-<a class="reference internal image-reference" href="_figures/graph.svg"><img alt="_figures/graph.svg" class="align-center" src="_figures/graph.svg" width="300px" /></a>
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
-<p>Note that <code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_index</span></code>, <em>i.e.</em> the tensor defining the source and target nodes of all edges, is <strong>not</strong> a list of index tuples.
-If you want to write your indices this way, you should transpose and call <code class="xref py py-obj docutils literal notranslate"><span class="pre">contiguous</span></code> on it before passing them to the data constructor:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">Data</span>
-
-<span class="n">edge_index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-                           <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-                           <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
-                           <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
-
-<span class="n">data</span> <span class="o">=</span> <span class="n">Data</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">edge_index</span><span class="o">=</span><span class="n">edge_index</span><span class="o">.</span><span class="n">t</span><span class="p">()</span><span class="o">.</span><span class="n">contiguous</span><span class="p">())</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Data</span><span class="p">(</span><span class="n">edge_index</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<p>Create empty folders for storing the dataset and results. Dataset download will be automatically initiated if dataset is not found under the specified location.</p>
+<p>For convenience, a script file is created to run the experiment with specified configuration. For instance, you can edit and run the <code class="xref py py-obj docutils literal notranslate"><span class="pre">interactive_run.sh</span></code> to start the experiment.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Assuming you are located in the H2GB repo</span>
+chmox<span class="w"> </span>+x<span class="w"> </span>./run/interactive_run.sh
+./run/interactive_run.sh
 </pre></div>
 </div>
-<p>Although the graph has only two edges, we need to define four index tuples to account for both directions of a edge.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You can print out your data object anytime and receive a short information about its attributes and their shapes.</p>
-</div>
-<p>Note that it is necessary that the elements in <code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_index</span></code> only hold indices in the range <code class="xref py py-obj docutils literal notranslate"><span class="pre">{</span> <span class="pre">0,</span> <span class="pre">...,</span> <span class="pre">num_nodes</span> <span class="pre">-</span> <span class="pre">1}</span></code>.
-This is needed as we want our final data representation to be as compact as possible, <em>e.g.</em>, we want to index the source and destination node features of the first edge <code class="xref py py-obj docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">1)</span></code> via <code class="xref py py-obj docutils literal notranslate"><span class="pre">x[0]</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">x[1]</span></code>, respectively.
-You can always check that your final <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> objects fulfill these requirements by running <code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="n">raise_on_error</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<p>You can also directly enter this command into your terminal:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>H2GB.main<span class="w"> </span>--cfg<span class="w"> </span><span class="o">{</span>Path<span class="w"> </span>to<span class="w"> </span>Your<span class="w"> </span>Configs<span class="o">}</span><span class="w"> </span>name_tag<span class="w"> </span><span class="o">{</span>Custom<span class="w"> </span>Name<span class="w"> </span>Tag<span class="o">}</span>
 </pre></div>
 </div>
-<p>Besides holding a number of node-level, edge-level or graph-level attributes, <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> provides a number of useful utility functions, <em>e.g.</em>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;edge_index&#39;</span><span class="p">]</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">])</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">tensor</span><span class="p">([[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">],</span>
-            <span class="p">[</span><span class="mf">0.0</span><span class="p">],</span>
-            <span class="p">[</span><span class="mf">1.0</span><span class="p">]])</span>
-
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1"> found in data&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">data</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">edge_index</span> <span class="n">found</span> <span class="ow">in</span> <span class="n">data</span>
-
-<span class="s1">&#39;edge_attr&#39;</span> <span class="ow">in</span> <span class="n">data</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kc">False</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">num_nodes</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">3</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">num_edges</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">4</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">num_node_features</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">1</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">has_isolated_nodes</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kc">False</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">has_self_loops</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kc">False</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">is_directed</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kc">False</span>
-
-<span class="c1"># Transfer data object to GPU.</span>
-<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>You can find a complete list of all methods at <code class="xref py py-class docutils literal notranslate"><span class="pre">torch_geometric.data.Data</span></code>.</p>
-</section>
-<section id="common-benchmark-datasets">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink">Common Benchmark Datasets</a><a class="headerlink" href="#common-benchmark-datasets" title="Permalink to this heading"></a></h2>
-<p><span class="inline-logo pyg">PyG</span> contains a large number of common benchmark datasets, <em>e.g.</em>, all Planetoid datasets (Cora, Citeseer, Pubmed), all graph classification datasets from <a class="reference external" href="https://chrsmrrs.github.io/datasets/">TUDatasets</a> and their <a class="reference external" href="https://github.com/nd7141/graph_datasets">cleaned versions</a>, the QM7 and QM9 dataset, and a handful of 3D mesh/point cloud datasets like FAUST, ModelNet10/40 and ShapeNet.</p>
-<p>Initializing a dataset is straightforward.
-An initialization of a dataset will automatically download its raw files and process them to the previously described <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> format.
-<em>E.g.</em>, to load the ENZYMES dataset (consisting of 600 graphs within 6 classes), type:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch_geometric.datasets</span> <span class="kn">import</span> <span class="n">TUDataset</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">TUDataset</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp/ENZYMES&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ENZYMES&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">ENZYMES</span><span class="p">(</span><span class="mi">600</span><span class="p">)</span>
-
-<span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">600</span>
-
-<span class="n">dataset</span><span class="o">.</span><span class="n">num_classes</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">6</span>
-
-<span class="n">dataset</span><span class="o">.</span><span class="n">num_node_features</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">3</span>
-</pre></div>
-</div>
-<p>We now have access to all 600 graphs in the dataset:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Data</span><span class="p">(</span><span class="n">edge_index</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">168</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">37</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">is_undirected</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kc">True</span>
-</pre></div>
-</div>
-<p>We can see that the first graph in the dataset contains 37 nodes, each one having 3 features.
-There are 168/2 = 84 undirected edges and the graph is assigned to exactly one class.
-In addition, the data object is holding exactly one graph-level target.</p>
-<p>We can even use slices, long or bool tensors to split the dataset.
-<em>E.g.</em>, to create a 90/10 train/test split, type:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[:</span><span class="mi">540</span><span class="p">]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">ENZYMES</span><span class="p">(</span><span class="mi">540</span><span class="p">)</span>
-
-<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">540</span><span class="p">:]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">ENZYMES</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>If you are unsure whether the dataset is already shuffled before you split, you can randomly permutate it by running:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shuffle</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">ENZYMES</span><span class="p">(</span><span class="mi">600</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This is equivalent of doing:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">perm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">))</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="n">perm</span><span class="p">]</span>
-<span class="o">&gt;&gt;</span> <span class="n">ENZYMES</span><span class="p">(</span><span class="mi">600</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Let’s try another one! Let’s download Cora, the standard benchmark dataset for semi-supervised graph node classification:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch_geometric.datasets</span> <span class="kn">import</span> <span class="n">Planetoid</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">Planetoid</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp/Cora&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Cora&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Cora</span><span class="p">()</span>
-
-<span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">1</span>
-
-<span class="n">dataset</span><span class="o">.</span><span class="n">num_classes</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">7</span>
-
-<span class="n">dataset</span><span class="o">.</span><span class="n">num_node_features</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">1433</span>
-</pre></div>
-</div>
-<p>Here, the dataset contains only a single, undirected citation graph:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Data</span><span class="p">(</span><span class="n">edge_index</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10556</span><span class="p">],</span> <span class="n">test_mask</span><span class="o">=</span><span class="p">[</span><span class="mi">2708</span><span class="p">],</span>
-         <span class="n">train_mask</span><span class="o">=</span><span class="p">[</span><span class="mi">2708</span><span class="p">],</span> <span class="n">val_mask</span><span class="o">=</span><span class="p">[</span><span class="mi">2708</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">2708</span><span class="p">,</span> <span class="mi">1433</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">2708</span><span class="p">])</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">is_undirected</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="kc">True</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">train_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">140</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">val_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">500</span>
-
-<span class="n">data</span><span class="o">.</span><span class="n">test_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="mi">1000</span>
-</pre></div>
-</div>
-<p>This time, the <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> objects holds a label for each node, and additional node-level attributes: <code class="xref py py-obj docutils literal notranslate"><span class="pre">train_mask</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">val_mask</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">test_mask</span></code>, where</p>
-<ul class="simple">
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">train_mask</span></code> denotes against which nodes to train (140 nodes),</p></li>
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">val_mask</span></code> denotes which nodes to use for validation, <em>e.g.</em>, to perform early stopping (500 nodes),</p></li>
-<li><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_mask</span></code> denotes against which nodes to test (1000 nodes).</p></li>
-</ul>
-</section>
-<section id="mini-batches">
-<h2><a class="toc-backref" href="#id5" role="doc-backlink">Mini-batches</a><a class="headerlink" href="#mini-batches" title="Permalink to this heading"></a></h2>
-<p>Neural networks are usually trained in a batch-wise fashion.
-<span class="inline-logo pyg">PyG</span> achieves parallelization over a mini-batch by creating sparse block diagonal adjacency matrices (defined by <code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_index</span></code>) and concatenating feature and target matrices in the node dimension.
-This composition allows differing number of nodes and edges over examples in one batch:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\mathbf{A} = \begin{bmatrix} \mathbf{A}_1 &amp; &amp; \\ &amp; \ddots &amp; \\ &amp; &amp; \mathbf{A}_n \end{bmatrix}, \qquad \mathbf{X} = \begin{bmatrix} \mathbf{X}_1 \\ \vdots \\ \mathbf{X}_n \end{bmatrix}, \qquad \mathbf{Y} = \begin{bmatrix} \mathbf{Y}_1 \\ \vdots \\ \mathbf{Y}_n \end{bmatrix}\end{split}\]</div>
-<p><span class="inline-logo pyg">PyG</span> contains its own <code class="xref py py-class docutils literal notranslate"><span class="pre">torch_geometric.loader.DataLoader</span></code>, which already takes care of this concatenation process.
-Let’s learn about it in an example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch_geometric.datasets</span> <span class="kn">import</span> <span class="n">TUDataset</span>
-<span class="kn">from</span> <span class="nn">torch_geometric.loader</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">TUDataset</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp/ENZYMES&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ENZYMES&#39;</span><span class="p">,</span> <span class="n">use_node_attr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">:</span>
-    <span class="n">batch</span>
-    <span class="o">&gt;&gt;&gt;</span> <span class="n">DataBatch</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="p">[</span><span class="mi">1082</span><span class="p">],</span> <span class="n">edge_index</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4066</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">1082</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">])</span>
-
-    <span class="n">batch</span><span class="o">.</span><span class="n">num_graphs</span>
-    <span class="o">&gt;&gt;&gt;</span> <span class="mi">32</span>
-</pre></div>
-</div>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">torch_geometric.data.Batch</span></code> inherits from <code class="xref py py-class docutils literal notranslate"><span class="pre">torch_geometric.data.Data</span></code> and contains an additional attribute called <code class="xref py py-obj docutils literal notranslate"><span class="pre">batch</span></code>.</p>
-<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch</span></code> is a column vector which maps each node to its respective graph in the batch:</p>
-<div class="math notranslate nohighlight">
-\[\mathrm{batch} = {\begin{bmatrix} 0 &amp; \cdots &amp; 0 &amp; 1 &amp; \cdots &amp; n - 2 &amp; n -1 &amp; \cdots &amp; n - 1 \end{bmatrix}}^{\top}\]</div>
-<p>You can use it to, <em>e.g.</em>, average node features in the node dimension for each graph individually:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch_geometric.utils</span> <span class="kn">import</span> <span class="n">scatter</span>
-<span class="kn">from</span> <span class="nn">torch_geometric.datasets</span> <span class="kn">import</span> <span class="n">TUDataset</span>
-<span class="kn">from</span> <span class="nn">torch_geometric.loader</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">TUDataset</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp/ENZYMES&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ENZYMES&#39;</span><span class="p">,</span> <span class="n">use_node_attr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">:</span>
-    <span class="n">data</span>
-    <span class="o">&gt;&gt;&gt;</span> <span class="n">DataBatch</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="p">[</span><span class="mi">1082</span><span class="p">],</span> <span class="n">edge_index</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4066</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">1082</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">])</span>
-
-    <span class="n">data</span><span class="o">.</span><span class="n">num_graphs</span>
-    <span class="o">&gt;&gt;&gt;</span> <span class="mi">32</span>
-
-    <span class="n">x</span> <span class="o">=</span> <span class="n">scatter</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">batch</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">reduce</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
-    <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
-    <span class="o">&gt;&gt;&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">([</span><span class="mi">32</span><span class="p">,</span> <span class="mi">21</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>You can learn more about the internal batching procedure of <span class="inline-logo pyg">PyG</span>, <em>e.g.</em>, how to modify its behavior, <a class="reference external" href="../advanced/batching.html">here</a>.
-For documentation of scatter operations, we refer the interested reader to the <code class="xref py py-obj docutils literal notranslate"><span class="pre">torch_scatter</span></code> <a class="reference external" href="https://pytorch-scatter.readthedocs.io">documentation</a>.</p>
-</section>
-<section id="data-transforms">
-<h2><a class="toc-backref" href="#id6" role="doc-backlink">Data Transforms</a><a class="headerlink" href="#data-transforms" title="Permalink to this heading"></a></h2>
-<p>Transforms are a common way in <code class="xref py py-obj docutils literal notranslate"><span class="pre">torchvision</span></code> to transform images and perform augmentation.
-<span class="inline-logo pyg">PyG</span> comes with its own transforms, which expect a <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> object as input and return a new transformed <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> object.
-Transforms can be chained together using <code class="xref py py-class docutils literal notranslate"><span class="pre">torch_geometric.transforms.Compose</span></code> and are applied before saving a processed dataset on disk (<code class="xref py py-obj docutils literal notranslate"><span class="pre">pre_transform</span></code>) or before accessing a graph in a dataset (<code class="xref py py-obj docutils literal notranslate"><span class="pre">transform</span></code>).</p>
-<p>Let’s look at an example, where we apply transforms on the ShapeNet dataset (containing 17,000 3D shape point clouds and per point labels from 16 shape categories).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch_geometric.datasets</span> <span class="kn">import</span> <span class="n">ShapeNet</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">ShapeNet</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp/ShapeNet&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Airplane&#39;</span><span class="p">])</span>
-
-<span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Data</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">2518</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">2518</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>We can convert the point cloud dataset into a graph dataset by generating nearest neighbor graphs from the point clouds via transforms:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch_geometric.transforms</span> <span class="k">as</span> <span class="nn">T</span>
-<span class="kn">from</span> <span class="nn">torch_geometric.datasets</span> <span class="kn">import</span> <span class="n">ShapeNet</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">ShapeNet</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp/ShapeNet&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Airplane&#39;</span><span class="p">],</span>
-                    <span class="n">pre_transform</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">KNNGraph</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">6</span><span class="p">))</span>
-
-<span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Data</span><span class="p">(</span><span class="n">edge_index</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">15108</span><span class="p">],</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">2518</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">2518</span><span class="p">])</span>
+<p>For example, the following command is to run <code class="xref py py-obj docutils literal notranslate"><span class="pre">MLP</span></code> model experiment for <code class="xref py py-obj docutils literal notranslate"><span class="pre">oag-cs</span></code> dataset.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>H2GB.main<span class="w"> </span>--cfg<span class="w"> </span>configs/oag-cs/oag-cs-MLP.yaml<span class="w"> </span>name_tag<span class="w"> </span>MLP
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>We use the <code class="xref py py-obj docutils literal notranslate"><span class="pre">pre_transform</span></code> to convert the data before saving it to disk (leading to faster loading times).
-Note that the next time the dataset is initialized it will already contain graph edges, even if you do not pass any transform.
-If the <code class="xref py py-obj docutils literal notranslate"><span class="pre">pre_transform</span></code> does not match with the one from the already processed dataset, you will be given a warning.</p>
-</div>
-<p>In addition, we can use the <code class="xref py py-obj docutils literal notranslate"><span class="pre">transform</span></code> argument to randomly augment a <code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code> object, <em>e.g.</em>, translating each node position by a small number:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch_geometric.transforms</span> <span class="k">as</span> <span class="nn">T</span>
-<span class="kn">from</span> <span class="nn">torch_geometric.datasets</span> <span class="kn">import</span> <span class="n">ShapeNet</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">ShapeNet</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp/ShapeNet&#39;</span><span class="p">,</span> <span class="n">categories</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Airplane&#39;</span><span class="p">],</span>
-                    <span class="n">pre_transform</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">KNNGraph</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="mi">6</span><span class="p">),</span>
-                    <span class="n">transform</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">RandomJitter</span><span class="p">(</span><span class="mf">0.01</span><span class="p">))</span>
-
-<span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Data</span><span class="p">(</span><span class="n">edge_index</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">15108</span><span class="p">],</span> <span class="n">pos</span><span class="o">=</span><span class="p">[</span><span class="mi">2518</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">2518</span><span class="p">])</span>
+<p><span class="inline-logo h2gb">ℋ²GB</span> currently only supports CPU or single-GPU training. You can specify the <code class="xref py py-obj docutils literal notranslate"><span class="pre">device</span></code> entry in the configuration files as follow. The default
+value of <code class="xref py py-obj docutils literal notranslate"><span class="pre">device</span></code> is <code class="xref py py-obj docutils literal notranslate"><span class="pre">auto</span></code>, which will automatically detect GPU device and select the GPU with the least memory usage.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>......
+device: cpu/cuda/cuda:0/auto
+......
 </pre></div>
 </div>
-<p>You can find a complete list of all implemented transforms at <code class="xref py py-mod docutils literal notranslate"><span class="pre">torch_geometric.transforms</span></code>.</p>
+</div>
 </section>
-<section id="learning-methods-on-graphs">
-<h2><a class="toc-backref" href="#id7" role="doc-backlink">Learning Methods on Graphs</a><a class="headerlink" href="#learning-methods-on-graphs" title="Permalink to this heading"></a></h2>
-<p>After learning about data handling, datasets, loader and transforms in <span class="inline-logo pyg">PyG</span>, it’s time to implement our first graph neural network!</p>
-<p>We will use a simple GCN layer and replicate the experiments on the Cora citation dataset.
-For a high-level explanation on GCN, have a look at its <a class="reference external" href="http://tkipf.github.io/graph-convolutional-networks/">blog post</a>.</p>
-<p>We first need to load the Cora dataset:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torch_geometric.datasets</span> <span class="kn">import</span> <span class="n">Planetoid</span>
-
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">Planetoid</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="s1">&#39;/tmp/Cora&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Cora&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Cora</span><span class="p">()</span>
+<section id="make-use-of-modular-ingredients">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Make Use of Modular Ingredients</a><a class="headerlink" href="#make-use-of-modular-ingredients" title="Permalink to this heading"></a></h2>
+<p>In the following, we list out the available modular ingredients provided in <span class="inline-logo unifiedgt">UnifiedGT</span> framework.</p>
+<table class="centered-table docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Graph Sampling</p></th>
+<th class="head"><p>Graph Encoding</p></th>
+<th class="head"><p>Graph Attention</p></th>
+<th class="head"><p>Attention Masking</p></th>
+<th class="head"><p>Feedforward Networks (FFNs)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="../generated/H2GB.sampler.get_NeighborLoader.html">Neighbor Sampling</a></p></td>
+<td><p><a class="reference external" href="../generated/H2GB.encoder.Node2VecNodeEncoder.html">Node2Vec Embedding</a></p></td>
+<td><p>Plain Attention</p></td>
+<td><p>None</p></td>
+<td><p>Single</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="../generated/H2GB.sampler.get_GrashSAINTRandomWalkLoader.html">GraphSAINT Sampling</a></p></td>
+<td><p><a class="reference external" href="../generated/H2GB.encoder.MetapathNodeEncoder.html">Metapath2Vec Embedding</a></p></td>
+<td><p>Cross-type Heterogeneous Attention</p></td>
+<td><p>Direct Neighbor Mask</p></td>
+<td><p>Type-specific</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="../generated/H2GB.sampler.get_HGTloader.html">HGSampling</a></p></td>
+<td><p><a class="reference external" href="../generated/H2GB.encoder.TransENodeEncoder.html">Knowledge Graph Embedding</a></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td></td>
+<td><p><a href="#id1"><span class="problematic" id="id2">`Masked Label Embedding &lt;&gt;`__</span></a></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>You can make use of each component by specifying the configuration files. We list a few examples in the following subsections.</p>
+<section id="graph-sampling">
+<h3><a class="toc-backref" href="#id7" role="doc-backlink">Graph Sampling</a><a class="headerlink" href="#graph-sampling" title="Permalink to this heading"></a></h3>
+<p>For example, to select different graph sampler, you only need to modify the <code class="xref py py-obj docutils literal notranslate"><span class="pre">train.sampler</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">train.neighbor_sizes</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">val.sampler</span></code>.
+To use a <a class="reference external" href="../generated/H2GB.sampler.get_NeighborLoader.html">neighbor sampler</a>, set as the following</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>......
+train:
+    sampler: hetero_neighbor
+    neighbor_sizes: [20, 15, 10]
+......
+val:
+    sampler: hetero_neighbor
+......
 </pre></div>
 </div>
-<p>Note that we do not need to use transforms or a dataloader.
-Now let’s implement a two-layer GCN:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
-<span class="kn">from</span> <span class="nn">torch_geometric.nn</span> <span class="kn">import</span> <span class="n">GCNConv</span>
-
-<span class="k">class</span> <span class="nc">GCN</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">GCNConv</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">num_node_features</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">GCNConv</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="n">x</span><span class="p">,</span> <span class="n">edge_index</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">edge_index</span>
-
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">edge_index</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">)</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">edge_index</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The constructor defines two <code class="xref py py-class docutils literal notranslate"><span class="pre">GCNConv</span></code> layers which get called in the forward pass of our network.
-Note that the non-linearity is not integrated in the <code class="xref py py-obj docutils literal notranslate"><span class="pre">conv</span></code> calls and hence needs to be applied afterwards (something which is consistent across all operators in <span class="inline-logo pyg">PyG</span>).
-Here, we chose to use ReLU as our intermediate non-linearity and finally output a softmax distribution over the number of classes.
-Let’s train this model on the training nodes for 200 epochs:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">GCN</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">5e-4</span><span class="p">)</span>
-
-<span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">):</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">nll_loss</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">train_mask</span><span class="p">],</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">train_mask</span><span class="p">])</span>
-    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Finally, we can evaluate our model on the test nodes:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-<span class="n">pred</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">correct</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">test_mask</span><span class="p">]</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">test_mask</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="n">acc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">correct</span><span class="p">)</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">test_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Accuracy: </span><span class="si">{</span><span class="n">acc</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">Accuracy</span><span class="p">:</span> <span class="mf">0.8150</span>
-</pre></div>
-</div>
-<p>This is all it takes to implement your first graph neural network.
-The easiest way to learn more about Graph Neural Networks is to study the examples in the <code class="xref py py-obj docutils literal notranslate"><span class="pre">examples/</span></code> directory and to browse <code class="xref py py-mod docutils literal notranslate"><span class="pre">torch_geometric.nn</span></code>.
-Happy hacking!</p>
 </section>
-<section id="exercises">
-<h2><a class="toc-backref" href="#id8" role="doc-backlink">Exercises</a><a class="headerlink" href="#exercises" title="Permalink to this heading"></a></h2>
-<ol class="arabic">
-<li><p>What does <code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_index.t().contiguous()</span></code> do?</p></li>
-<li><p>Load the <code class="xref py py-obj docutils literal notranslate"><span class="pre">&quot;IMDB-BINARY&quot;</span></code> dataset from the <code class="xref py py-class docutils literal notranslate"><span class="pre">TUDataset</span></code> benchmark suite and randomly split it into 80%/10%/10% training, validation and test graphs.</p></li>
-<li><p>What does each number of the following output mean?</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">DataBatch</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="p">[</span><span class="mi">1082</span><span class="p">],</span> <span class="n">edge_index</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4066</span><span class="p">],</span> <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="mi">1082</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">])</span>
+<section id="graph-encoding">
+<h3><a class="toc-backref" href="#id8" role="doc-backlink">Graph Encoding</a><a class="headerlink" href="#graph-encoding" title="Permalink to this heading"></a></h3>
+<p>To select different graph encoding method, you only need to modify the <code class="xref py py-obj docutils literal notranslate"><span class="pre">dataset.node_encoder_name</span></code>.
+To use a <a class="reference external" href="../generated/H2GB.encoder.Node2VecNodeEncoder.html">Node2Vec embedding</a>, set as the following</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>......
+dataset:
+    node_encoder_name: Raw+Hetero_Node2Vec
+......
 </pre></div>
 </div>
-</li>
-</ol>
+<p>You can even combine multiple graph encoding together, for example, combining masked label embedding and <a class="reference external" href="../generated/H2GB.encoder.MetapathNodeEncoder.html">Metapath2Vec</a> together</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>......
+dataset:
+    node_encoder_name: Raw+Hetero_Label+Hetero_Metapath
+......
+</pre></div>
+</div>
+</section>
+<section id="graph-attention">
+<h3><a class="toc-backref" href="#id9" role="doc-backlink">Graph Attention</a><a class="headerlink" href="#graph-attention" title="Permalink to this heading"></a></h3>
+<p>To select different graph encoding method, you can modify the <code class="xref py py-obj docutils literal notranslate"><span class="pre">gt.layer_type</span></code>. We have several graph transformer examples that made
+use of different graph attention, such as in <code class="xref py py-obj docutils literal notranslate"><span class="pre">GraphTrans</span></code> and <code class="xref py py-obj docutils literal notranslate"><span class="pre">Gophormer</span></code>:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>......
+gt:
+    layer_type: TorchTransformer/SparseNodeTransformer
+......
+</pre></div>
+</div>
+</section>
+<section id="attention-masking">
+<h3><a class="toc-backref" href="#id10" role="doc-backlink">Attention Masking</a><a class="headerlink" href="#attention-masking" title="Permalink to this heading"></a></h3>
+<p>You can apply different attention masking method by changing the <code class="xref py py-obj docutils literal notranslate"><span class="pre">gt.attn_mask</span></code>.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>......
+gt:
+    attn_mask: none/Edge/kHop
+......
+</pre></div>
+</div>
+</section>
+<section id="feedforward-networks-ffns">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Feedforward Networks (FFNs)</a><a class="headerlink" href="#feedforward-networks-ffns" title="Permalink to this heading"></a></h3>
+<p>We provide two choices in the <code class="xref py py-obj docutils literal notranslate"><span class="pre">gt.ffn</span></code>, corresponding to single FFN and type-specific FFN.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>......
+gt:
+    ffn: Single/Type
+......
+</pre></div>
+</div>
+</section>
+</section>
+<section id="metric-selection">
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">Metric Selection</a><a class="headerlink" href="#metric-selection" title="Permalink to this heading"></a></h2>
+<p>As our <span class="inline-logo unifiedgt">UnifiedGT</span> framework provides a unified evaluator, you can conveniently select different evaluation metric depends on the demand of your custom dataset.
+You just need to specify <code class="xref py py-obj docutils literal notranslate"><span class="pre">metric_best</span></code> in your configuration file. For example <code class="xref py py-obj docutils literal notranslate"><span class="pre">metric_best:</span> <span class="pre">accuracy</span></code>.
+We have provided many choices of evaluation metrics, which is defined in <code class="xref py py-obj docutils literal notranslate"><span class="pre">/H2GB/logger.py</span></code>. We defined 3 scenarios of downstream tasks, which are binary classification,
+multi-class classification and multi-label classification. We details the definition of these three scenarios and their correpsonding supported metrics in the following subsections.</p>
+<section id="binary-classification">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">Binary Classification</a><a class="headerlink" href="#binary-classification" title="Permalink to this heading"></a></h3>
+<p>The goal of binary classification is to categorize data into one of two classes or categories. The true label is an integer containing only <span class="math notranslate nohighlight">\(0`\)</span> and <span class="math notranslate nohighlight">\(1\)</span>. The prediction from the model is usually
+a real number which would pass through a sigmoid function to convert to a probability that it belongs to the positive class.</p>
+<p>We support <code class="xref py py-obj docutils literal notranslate"><span class="pre">accuracy</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">precision</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">recall</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">f1</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">macro-f1</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">micro-f1</span></code>, and <code class="xref py py-obj docutils literal notranslate"><span class="pre">auc</span></code> for this scenario.</p>
+</section>
+<section id="multi-class-classification">
+<h3><a class="toc-backref" href="#id14" role="doc-backlink">Multi-class Classification</a><a class="headerlink" href="#multi-class-classification" title="Permalink to this heading"></a></h3>
+<p>The goal of multi-class classification is to categorize data into more than two classes. The true label is an integer between <span class="math notranslate nohighlight">\(0\)</span> and <span class="math notranslate nohighlight">\(C-1\)</span>. The prediction from the model is usually
+a vector of <span class="math notranslate nohighlight">\(C\)</span> real number which would pass through a softmax function to convert to a probability that it belongs to a certain class.</p>
+<p>We support <code class="xref py py-obj docutils literal notranslate"><span class="pre">accuracy</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">f1</span></code>, and <code class="xref py py-obj docutils literal notranslate"><span class="pre">micro-f1</span></code> for this scenario.</p>
+</section>
+<section id="multi-label-classification">
+<h3><a class="toc-backref" href="#id15" role="doc-backlink">Multi-label Classification</a><a class="headerlink" href="#multi-label-classification" title="Permalink to this heading"></a></h3>
+<p>Multi-label classification assigns multiple labels to an instance, allowing it to belong to more than one category simultaneously. The true label is an a vector of <span class="math notranslate nohighlight">\(C\)</span> binary number representing what label it has. The prediction from the model is usually
+<span class="math notranslate nohighlight">\(C\)</span> real number which would pass through a sigmoid function respectively to convert to a probability that it contains a certain label.</p>
+<p>We support <code class="xref py py-obj docutils literal notranslate"><span class="pre">accuracy</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">f1</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">auc</span></code>, and <code class="xref py py-obj docutils literal notranslate"><span class="pre">ap</span></code> for this scenario.</p>
+</section>
 </section>
 </section>
 

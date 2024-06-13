@@ -43,6 +43,7 @@ class RCDDDataset(InMemoryDataset):
             being saved to disk. (default: :obj:`None`)
         force_reload (bool, optional): Whether to re-process the dataset.
             (default: :obj:`False`)
+    
     """
     url = ('https://s3.cn-north-1.amazonaws.com.cn/dgl-data/dataset/'
            'openhgnn/AliRCD_ICDM.zip')

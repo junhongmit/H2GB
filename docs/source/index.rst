@@ -71,5 +71,7 @@ and unified performance evaluation.
    :caption: Package Reference
 
    modules/datasets
+   modules/sampler
+   modules/encoder
    modules/layer
    

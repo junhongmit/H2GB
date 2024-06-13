@@ -62,7 +62,9 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">ℋ²GB.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/datasets.html">H2GB.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/sampler.html">H2GB.sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/encoder.html">H2GB.encoder</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/layer.html">H²GB</a></li>
 </ul>
 
@@ -99,20 +101,20 @@
 Please setup a virtual environment, <em>e.g.</em>, via <span class="inline-logo conda empty"></span> <a class="reference external" href="https://conda.io/projects/conda/en/latest/user-guide/install">Anaconda or Miniconda</a>, or create a <a class="reference external" href="https://www.docker.com/">Docker image</a>.</p>
 </div>
 <p>Installing <span class="inline-logo h2gb">ℋ²GB</span> requires external library like <span class="inline-logo pytorch">PyTorch</span> and <span class="inline-logo pyg">PyG</span>. You can easily set up a conda environment to use <span class="inline-logo h2gb">ℋ²GB</span>. For example, in the following, we create a virtual environment named <cite>H2GB</cite>:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda create -n H2GB python=3.9 -y
-conda activate H2GB
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>H2GB<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.9<span class="w"> </span>-y
+conda<span class="w"> </span>activate<span class="w"> </span>H2GB
 </pre></div>
 </div>
 <p>Then, Install the required packages using the following commands:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
-conda install pyg -c pyg
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>pytorch<span class="w"> </span>torchvision<span class="w"> </span>torchaudio<span class="w"> </span>pytorch-cuda<span class="o">=</span><span class="m">11</span>.8<span class="w"> </span>-c<span class="w"> </span>pytorch<span class="w"> </span>-c<span class="w"> </span>nvidia
+conda<span class="w"> </span>install<span class="w"> </span>pyg<span class="w"> </span>-c<span class="w"> </span>pyg
 </pre></div>
 </div>
 <p>Now you are ready for installing <span class="inline-logo h2gb">ℋ²GB</span>!</p>
 <section id="installation-via-pypi">
 <h2>Installation via PyPi<a class="headerlink" href="#installation-via-pypi" title="Permalink to this heading"></a></h2>
 <p>To install <span class="inline-logo h2gb">ℋ²GB</span>, the easiest way is to simply run:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip install torch_geometric
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch_geometric
 </pre></div>
 </div>
 </section>

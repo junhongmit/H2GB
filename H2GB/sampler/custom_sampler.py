@@ -63,6 +63,32 @@ def convert_batch(batch):
     return batch
 @register_sampler('hetero_neighbor')
 def get_NeighborLoader(dataset, batch_size, shuffle=True, split='train'):
+    r"""
+    A heterogeneous graph sampler that performs neighbor sampling as introduced
+    in the `"Inductive Representation Learning on Large Graphs"
+    <https://arxiv.org/abs/1706.02216>`_ paper.
+    This loader allows for mini-batch training of GNNs on large-scale graphs
+    where full-batch training is not feasible.
+
+    More specifically, :obj:`neighbor_sizes` in the configuration denotes
+    how much neighbors are sampled for each node in each iteration.
+    :class:`~torch_geometric.loader.NeighborLoader` takes in this list of
+    :obj:`num_neighbors` and iteratively samples :obj:`num_neighbors[i]` for
+    each node involved in iteration :obj:`i - 1`.
+
+    Sampled nodes are sorted based on the order in which they were sampled.
+    In particular, the first :obj:`batch_size` nodes represent the set of
+    original mini-batch nodes.
+
+    Args:
+        dataset (Any): A :class:`~torch_geometric.data.InMemoryDataset` dataset object.
+        batch_size (int): The number of seed nodes (first nodes in the batch).
+        shuffle (bool): Whether to shuffle the data or not (default: :obj:`True`).
+        split (str): Specify which data split (:obj:`train`, :obj:`val`, :obj:`test`) is
+            for this sampler. This determines some sampling parameter loaded from the
+            configuration file, such as :obj:`iter_per_epoch`.
+    """
+
     data = dataset[0]
     sample_sizes = {key: cfg.train.neighbor_sizes for key in data.edge_types}
     
@@ -201,19 +227,27 @@ def get_LINKXLoader(dataset, batch_size, shuffle=True, split='train'):
     
     return loader_train
 
-# def convert_batch_to_hetero(data):
-#     hetero_data = HeteroData.from_dict({
-#         "node_type": {
-#             "x": data.x, 
-#             "y": data.y, 
-#             "train_mask": data.train_mask,
-#             "val_mask": data.val_mask,
-#             "test_mask": data.test_mask,
-#         }, 
-#         ("node_type", "edge_type", "node_type"): data.edge_index})
-#     return hetero_data
+
 @register_sampler('graphsaint_rw')
 def get_GrashSAINTRandomWalkLoader(dataset, batch_size, shuffle=True, split='train'):
+    r"""
+    A homogeneous random-walk based graph sampler from the `"GraphSAINT: Graph
+    Sampling Based Inductive Learning Method"
+    <https://arxiv.org/abs/1907.04931>`_ paper.
+    Given a graph in a :obj:`data` object, this class samples nodes and
+    constructs subgraphs that can be processed in a mini-batch fashion.
+    Normalization coefficients for each mini-batch are given via
+    :obj:`node_norm` and :obj:`edge_norm` data attributes.
+
+    Args:
+        dataset (Any): A :class:`~torch_geometric.data.InMemoryDataset` dataset object.
+        batch_size (int): The number of seed nodes (first nodes in the batch).
+        shuffle (bool): Whether to shuffle the data or not (default: :obj:`True`).
+        split (str): Specify which data split (:obj:`train`, :obj:`val`, :obj:`test`) is
+            for this sampler. This determines some sampling parameter loaded from the
+            configuration file, such as :obj:`iter_per_epoch`.
+    """
+
     data = dataset[0]
     if isinstance(data, HeteroData):
         metadata = data.metadata()
@@ -252,6 +286,38 @@ def get_RandomNodeLoader(dataset, batch_size, shuffle=True, split='train'):
 
 @register_sampler('hgt')
 def get_HGTloader(dataset, batch_size, shuffle=True, split='train'):
+    r"""
+    A heterogeneous graph sampler that from the `"Heterogeneous Graph
+    Transformer" <https://arxiv.org/abs/2003.01332>`_ paper.
+    This loader allows for mini-batch training of GNNs on large-scale graphs
+    where full-batch training is not feasible.
+
+    The sampler tries to (1) keep a similar number of nodes and edges for
+    each type and (2) keep the sampled sub-graph dense to minimize the
+    information loss and reduce the sample variance.
+
+    Methodically, HGSampler keeps track of a node budget for each node type,
+    which is then used to determine the sampling probability of a node.
+    In particular, the probability of sampling a node is determined by the
+    number of connections to already sampled nodes and their node degrees.
+    With this, HGSampler will sample a fixed amount of neighbors for each
+    node type in each iteration, as given by the :obj:`neighbor_sizes`
+    argument from the configuration.
+
+    Sampled nodes are sorted based on the order in which they were sampled.
+    In particular, the first :obj:`batch_size` nodes represent the set of
+    original mini-batch nodes.
+
+    Args:
+        dataset (Any): A :class:`~torch_geometric.data.InMemoryDataset` dataset object.
+        batch_size (int): The number of seed nodes (first nodes in the batch).
+        shuffle (bool): Whether to shuffle the data or not (default: :obj:`True`).
+        split (str): Specify which data split (:obj:`train`, :obj:`val`, :obj:`test`) is
+            for this sampler. This determines some sampling parameter loaded from the
+            configuration file, such as :obj:`iter_per_epoch`.
+    """
+
+
     # Note: sending the whole dataset to GPU seems has no performance difference. But they would occupy 24GB VRAM.
     # data = dataset[0].to(cfg.device, 'x', 'y')
     if len(cfg.train.neighbor_sizes_dict) > 0:
@@ -344,64 +410,6 @@ def get_NAGloader(dataset, batch_size, shuffle=True, split='train'):
     
     return loader_train
 
-
-def convert_hop2seq(batch):
-    def hop2seq(adj, features, K):
-        # size= (N, 1, K+1, d )
-        # adj = adj.to(torch.device(cfg.device))
-        # features = features.to(torch.device(cfg.device))
-        nodes_features = torch.empty(features.shape[0], K+1, features.shape[1])
-
-        index = torch.arange(features.shape[0])
-        nodes_features[index, 0, :] = features[index]
-        # for i in range(features.shape[0]):
-        #     nodes_features[i, 0, 0, :] = features[i]
-
-        x = features #+ torch.zeros_like(features)
-
-        for i in range(K):
-            x = torch.matmul(adj, x)
-            nodes_features[index, i + 1, :] = x[index]       
-
-        return nodes_features#.to('cpu')
-    if isinstance(batch, HeteroData):
-        homo = batch.to_homogeneous()
-    
-    # Pay attention: the adj_t matters! Originally, the NAGphormer
-    # author applied matmul on adj and x, this is not an issue for
-    # undirected graph. But our experiments were done on directed graph!
-    adj_t = to_torch_sparse_tensor(homo.edge_index, size=(homo.num_nodes, homo.num_nodes)).t()
-    features = hop2seq(adj_t, homo.x, cfg.gnn.hops)  # return (N, hops+1, d)
-    return [features[:batch[cfg.dataset.task_entity].batch_size],\
-             homo.y[:batch[cfg.dataset.task_entity].batch_size]]
-@register_sampler('nag+hgt')
-def get_NAGHGTloader(dataset, batch_size, shuffle=True, split='train'):
-    r'''
-    Minibatch loader for NAGphormer
-    '''
-    sample_sizes = {key: cfg.train.neighbor_sizes for key in dataset.data.node_types}
-    
-    loader_train = \
-        LoaderWrapper( \
-            HGTLoader(dataset[0],
-                    num_samples=sample_sizes,
-                    input_nodes=(cfg.dataset.task_entity, dataset.data[cfg.dataset.task_entity][f"{split}_mask"]),
-                    # Use a batch size for sampling training nodes of input type
-                    batch_size=batch_size, shuffle=shuffle,
-                    num_workers=cfg.num_workers,
-                    persistent_workers=cfg.train.persistent_workers,
-                    pin_memory=cfg.train.pin_memory,
-                    transform=convert_hop2seq),
-            getattr(cfg, 'val' if split == 'test' else split).iter_per_epoch,
-            split
-        )
-
-    # train_input_nodes = ('paper', dataset.data[cfg.dataset.task_entity].train_mask)
-    # kwargs = {'batch_size': 1024, 'num_workers': 6, 'persistent_workers': True}
-    # loader_train = HGTLoader(dataset[0], num_samples={key: [128] * 4 for key in dataset[0].node_types}, shuffle=True,
-    #                             input_nodes=train_input_nodes, **kwargs)
-
-    return loader_train
 
 class LocalSampler(torch.utils.data.DataLoader):
     def __init__(self, data, #edge_index: Union[Tensor, SparseTensor],
@@ -681,119 +689,4 @@ def get_HINormerLoader(dataset, batch_size, shuffle=True, split='train'):
                               persistent_workers=cfg.train.persistent_workers)
     # loader_train = batch_data
     
-    return loader_train
-
-
-# def convert_multigraph(batch):
-#     if isinstance(batch, HeteroData):
-#         num_original_nodes = batch.num_nodes
-#         for edge_type in batch.edge_types:
-#             num_edges = batch[edge_type].edge_index.size(1)
-#             dummy_nodes_start = num_original_nodes
-            
-#             _, inverse_indices, counts = torch.unique(batch[edge_type].edge_index, return_inverse=True, return_counts=True, dim=1)
-#             is_duplicate = counts > 1
-
-#             # Placeholder for new edges
-#             new_edges = []
-#             new_edge_attr = [] if batch[edge_type].edge_attr is not None else None
-#             new_edge_label = [] if batch[edge_type].edge_label is not None else None
-#             dummy_node_counter = 0
-
-#             for i in range(num_edges):
-#                 src, dst = data.edge_index[:, i]
-#                 if is_duplicate[inverse_indices[i]]:
-#                     # Add dummy node for duplicate edges
-#                     dummy_node = dummy_nodes_start + dummy_node_counter
-#                     dummy_node_counter += 1
-#                     new_edges.extend([[src, dummy_node], [dummy_node, dst]])
-#                 else:
-#                     # Keep unique edges as they are
-#                     new_edges.append([src, dst])
-                    
-#                 if new_edge_attr is not None and is_duplicate[inverse_indices[i]]:
-#                     attr = data.edge_attr[i].tolist()
-#                     new_edge_attr.extend([attr, attr])  # Duplicate the attribute for both new edges
-#                 elif new_edge_attr is not None:
-#                     new_edge_attr.append(data.edge_attr[i].tolist())
-                    
-#                 if new_edge_label is not None and is_duplicate[inverse_indices[i]]:
-#                     label = data.edge_label[i].tolist()
-#                     new_edge_label.extend([label, label])  # Duplicate the label for both new edges
-#                 elif new_edge_label is not None:
-#                     new_edge_label.append(data.edge_label[i].tolist())
-
-#             new_edge_index = torch.tensor(new_edges, dtype=torch.long).t()
-#             if new_edge_attr is not None:
-#                 new_edge_attr = torch.tensor(new_edge_attr, dtype=data.edge_attr.dtype)
-        
-#         new_data = HeteroData(edge_index=new_edge_index, edge_attr=new_edge_attr, num_nodes=num_original_nodes+dummy_node_counter)
-#     else:
-#         pass
-#     return data
-
-class AddEgoIds(BaseTransform):
-    r"""Add IDs to the centre nodes of the batch.
-    """
-    def __init__(self):
-        pass
-
-    def __call__(self, data: Union[Data, HeteroData]):
-        x = data.x if not isinstance(data, HeteroData) else data['node'].x
-        device = x.device
-        ids = torch.zeros((x.shape[0], 1), device=device)
-        if not isinstance(data, HeteroData):
-            nodes = torch.unique(data.edge_label_index.view(-1)).to(device)
-        else:
-            nodes = torch.unique(data['node', 'to', 'node'].edge_label_index.view(-1)).to(device)
-        ids[nodes] = 1
-        if not isinstance(data, HeteroData):
-            data.x = torch.cat([x, ids], dim=1)
-        else: 
-            data['node'].x = torch.cat([x, ids], dim=1)
-        
-        return data
-
-@register_sampler('link_neighbor')
-def get_LinkNeighborLoader(dataset, batch_size, shuffle=True, split='train'):
-    task = cfg.dataset.task_entity
-    # data = dataset[0]
-
-    # def z_norm(data):
-    #     std = data.std(0).unsqueeze(0)
-    #     std = torch.where(std == 0, torch.tensor(1, dtype=torch.float32).cpu(), std)
-    #     return (data - data.mean(0).unsqueeze(0)) / std
-
-    # Slice the training/validation/test set based on the edge mask
-    # data_copy = copy.deepcopy(data)
-    # for edge_type in data.edge_types:
-    #     mask = data_copy[edge_type][f'{split}_edge_mask']
-    #     data_copy[edge_type].edge_index = data_copy[edge_type].edge_index[:, mask]
-    #     # Independent normalization on each dataset is important for performance
-    #     data_copy[edge_type].edge_attr = z_norm(data_copy[edge_type].edge_attr[mask])
-    #     if hasattr(data_copy[edge_type], 'y'):
-    #         data_copy[edge_type].y = data_copy[edge_type].y[mask]
-
-    dataset_idx = {'train': 0, 'val': 1, 'test': 2}
-    data = dataset[dataset_idx[split]]
-    mask = data[task].split_mask
-    edge_label_index = data[task].edge_index[:, mask]
-    edge_label = data[task].y[mask]
-    loader_train = \
-        LoaderWrapper( \
-            LinkNeighborLoader(
-                data=data,
-                num_neighbors=cfg.train.neighbor_sizes,
-                # neg_sampling_ratio=0.0,
-                edge_label_index=(task, edge_label_index),
-                edge_label=edge_label,
-                batch_size=batch_size,
-                num_workers=cfg.num_workers,
-                shuffle=shuffle,
-                # transform=AddEgoIds()
-            ),
-            getattr(cfg, 'val' if split == 'test' else split).iter_per_epoch,
-            split
-        )
-
     return loader_train

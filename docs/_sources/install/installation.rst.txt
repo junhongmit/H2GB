@@ -9,14 +9,14 @@ Installation
 
 Installing :h2gb:`ℋ²GB` requires external library like :pytorch:`PyTorch` and :pyg:`PyG`. You can easily set up a conda environment to use :h2gb:`ℋ²GB`. For example, in the following, we create a virtual environment named `H2GB`:
 
-.. code-block:: none
+.. code-block:: bash
 
    conda create -n H2GB python=3.9 -y
    conda activate H2GB
 
 Then, Install the required packages using the following commands:
 
-.. code-block:: none
+.. code-block:: bash
 
    conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
    conda install pyg -c pyg
@@ -28,7 +28,7 @@ Installation via PyPi
 
 To install :h2gb:`ℋ²GB`, the easiest way is to simply run:
 
-.. code-block:: none
+.. code-block:: bash
 
    pip install torch_geometric
 

@@ -77,10 +77,14 @@ class GeneralMultiLayer(nn.Module):
 @register_node_encoder('Raw')
 class RawNodeEncoder(torch.nn.Module):
     """
-    The raw feature node encoder
+    The raw feature node encoder.
+
+    Apply a linear transformation to each node feature to transform them into
+    a unified node embedding sapce.
 
     Args:
         emb_dim (int): Output embedding dimension
+        dataset (Any): A :class:`~torch_geometric.data.InMemoryDataset` dataset object.
     """
     def __init__(self, dim_emb, dataset):
         super().__init__()
@@ -134,10 +138,14 @@ class RawNodeEncoder(torch.nn.Module):
 @register_edge_encoder('Raw')
 class RawEdgeEncoder(torch.nn.Module):
     """
-    The raw feature edge encoder
+    The raw feature edge encoder.
+    
+    Apply a linear transformation to each edge feature to transform them into
+    a unified edge embedding sapce.
 
     Args:
         emb_dim (int): Output embedding dimension
+        dataset (Any): A :class:`~torch_geometric.data.InMemoryDataset` dataset object.
     """
     def __init__(self, dim_emb, dataset):
         super().__init__()

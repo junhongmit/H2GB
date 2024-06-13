@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H2GB.encoder.hetero_raw_encoder &mdash; H2GB 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/mytheme.css" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/js/version_alert.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Install ℋ²GB</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install/installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/introduction.html">Introduction by Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/datasets.html">H2GB.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/sampler.html">H2GB.sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/layer.html">H²GB</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">H2GB</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">H2GB.encoder.hetero_raw_encoder</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for H2GB.encoder.hetero_raw_encoder</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">HeteroData</span>
+
+<span class="kn">from</span> <span class="nn">H2GB.graphgym.config</span> <span class="kn">import</span> <span class="n">cfg</span>
+<span class="kn">from</span> <span class="nn">H2GB.graphgym.register</span> <span class="kn">import</span> <span class="n">register_node_encoder</span><span class="p">,</span> <span class="n">register_edge_encoder</span>
+
+<span class="k">class</span> <span class="nc">GeneralLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;General wrapper for layers&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">,</span>
+                 <span class="n">dim_in</span><span class="p">,</span>
+                 <span class="n">dim_out</span><span class="p">,</span>
+                 <span class="n">has_act</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">has_bn</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">has_ln</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">has_l2norm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">act</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GeneralLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_l2norm</span> <span class="o">=</span> <span class="n">has_l2norm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">layer_dict</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">dim_in</span><span class="p">,</span>
+                                      <span class="n">dim_out</span><span class="p">,</span>
+                                      <span class="n">bias</span><span class="o">=</span><span class="ow">not</span> <span class="n">has_bn</span><span class="p">,</span>
+                                      <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">layer_wrapper</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">has_bn</span><span class="p">:</span>
+            <span class="n">layer_wrapper</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="n">dim_out</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">bn</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">bn</span><span class="o">.</span><span class="n">mom</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">has_ln</span><span class="p">:</span>
+            <span class="n">layer_wrapper</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="n">dim_out</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">dropout</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">layer_wrapper</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="n">dropout</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="n">cfg</span><span class="o">.</span><span class="n">mem</span><span class="o">.</span><span class="n">inplace</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">has_act</span><span class="p">:</span>
+            <span class="n">layer_wrapper</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">act_dict</span><span class="p">[</span><span class="n">act</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">layer_wrapper</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_layer</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_l2norm</span><span class="p">:</span>
+                <span class="n">batch</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_layer</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_l2norm</span><span class="p">:</span>
+                <span class="n">batch</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">batch</span>
+
+
+<span class="k">class</span> <span class="nc">GeneralMultiLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;General wrapper for stack of layers&#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">,</span>
+                 <span class="n">num_layers</span><span class="p">,</span>
+                 <span class="n">dim_in</span><span class="p">,</span>
+                 <span class="n">dim_out</span><span class="p">,</span>
+                 <span class="n">dim_inner</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">final_act</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GeneralMultiLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">dim_inner</span> <span class="o">=</span> <span class="n">dim_in</span> <span class="k">if</span> <span class="n">dim_inner</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dim_inner</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span><span class="p">):</span>
+            <span class="n">d_in</span> <span class="o">=</span> <span class="n">dim_in</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">dim_inner</span>
+            <span class="n">d_out</span> <span class="o">=</span> <span class="n">dim_out</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">num_layers</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">dim_inner</span>
+            <span class="n">has_act</span> <span class="o">=</span> <span class="n">final_act</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">num_layers</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">True</span>
+            <span class="n">layer</span> <span class="o">=</span> <span class="n">GeneralLayer</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">d_in</span><span class="p">,</span> <span class="n">d_out</span><span class="p">,</span> <span class="n">has_act</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_module</span><span class="p">(</span><span class="s1">&#39;Layer_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">layer</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">batch</span>
+
+<div class="viewcode-block" id="HeteroRawNodeEncoder"><a class="viewcode-back" href="../../../generated/H2GB.encoder.HeteroRawNodeEncoder.html#H2GB.encoder.HeteroRawNodeEncoder">[docs]</a><span class="nd">@register_node_encoder</span><span class="p">(</span><span class="s1">&#39;Hetero_Raw&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">HeteroRawNodeEncoder</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The heterogeneous raw feature node encoder. </span>
+
+<span class="sd">    Apply a type-specific linear transformation to each node feature to</span>
+<span class="sd">    transform them into a unified node embedding sapce.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        emb_dim (int): Output embedding dimension</span>
+<span class="sd">        dataset (Any): A :class:`~torch_geometric.data.InMemoryDataset` dataset object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim_emb</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim_in</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">share</span><span class="o">.</span><span class="n">dim_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># pecfg           = cfg.posenc_Hetero_Raw</span>
+        <span class="c1"># self.layers     = pecfg.layers</span>
+        <span class="c1"># self.dropout    = pecfg.dropout</span>
+        <span class="c1"># self.act        = pecfg.act</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dim_emb</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">dim_emb</span> <span class="o">=</span> <span class="p">{</span><span class="n">node_type</span><span class="p">:</span> <span class="n">dim_emb</span> <span class="k">for</span> <span class="n">node_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_in</span><span class="p">}</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">node_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">node_type</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dim_in</span><span class="p">[</span><span class="n">node_type</span><span class="p">],</span> <span class="n">dim_emb</span><span class="p">[</span><span class="n">node_type</span><span class="p">])</span>
+            <span class="c1"># self.linear[node_type] = GeneralMultiLayer(&#39;linear&#39;, </span>
+            <span class="c1">#                  self.pre_layers, self.dim_in[node_type], dim_emb[node_type],</span>
+            <span class="c1">#                  dim_inner=dim_emb[node_type], final_act=True,</span>
+            <span class="c1">#                  has_bn=self.batch_norm, has_ln=self.layer_norm,</span>
+            <span class="c1">#                  dropout=self.dropout, act=self.act)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">node_type</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">,</span> <span class="n">dim_emb</span><span class="p">[</span><span class="n">node_type</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">node_type</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">node_types</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">node_type</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">HeteroData</span><span class="p">):</span>
+            <span class="c1"># Only changing the x itself can make sure the to_homogeneous() function works well later</span>
+            <span class="k">for</span> <span class="n">node_type</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">node_types</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">):</span>
+                    <span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">[</span><span class="n">node_type</span><span class="p">](</span><span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">cfg</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">sampler</span> <span class="o">==</span> <span class="s1">&#39;full_batch&#39;</span><span class="p">:</span>
+                        <span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span> <span class="c1">#(torch.arange(batch[node_type].num_nodes))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">encoder</span><span class="p">[</span><span class="n">node_type</span><span class="p">](</span><span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">n_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">batch</span></div>
+
+
+<div class="viewcode-block" id="HeteroRawEdgeEncoder"><a class="viewcode-back" href="../../../generated/H2GB.encoder.HeteroRawEdgeEncoder.html#H2GB.encoder.HeteroRawEdgeEncoder">[docs]</a><span class="nd">@register_edge_encoder</span><span class="p">(</span><span class="s1">&#39;Hetero_Raw&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">HeteroRawEdgeEncoder</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The heterogeneous raw feature edge encoder.</span>
+
+<span class="sd">    Apply a type-specific linear transformation to each edge feature to</span>
+<span class="sd">    transform them into a unified edge embedding sapce.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        emb_dim (int): Output embedding dimension</span>
+<span class="sd">        dataset (Any): A :class:`~torch_geometric.data.InMemoryDataset` dataset object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim_emb</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim_in</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">share</span><span class="o">.</span><span class="n">dim_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dim_emb</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">dim_emb</span> <span class="o">=</span> <span class="p">{</span><span class="n">edge_type</span><span class="p">:</span> <span class="n">dim_emb</span> <span class="k">for</span> <span class="n">edge_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_in</span><span class="p">}</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">edge_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">edge_type</span> <span class="o">=</span> <span class="s1">&#39;__&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">edge_type</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">[</span><span class="n">edge_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dim_in</span><span class="p">[</span><span class="n">edge_type</span><span class="p">],</span> <span class="n">dim_emb</span><span class="p">[</span><span class="n">edge_type</span><span class="p">])</span>
+    
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+        <span class="c1"># print(batch)</span>
+        <span class="c1"># print(batch[(&#39;node&#39;, &#39;to&#39;, &#39;node&#39;)].e_id)</span>
+        <span class="c1"># print(batch[(&#39;node&#39;, &#39;to&#39;, &#39;node&#39;)].input_id)</span>
+        <span class="c1"># print(torch.isin(batch[(&#39;node&#39;, &#39;to&#39;, &#39;node&#39;)].e_id, batch[(&#39;node&#39;, &#39;to&#39;, &#39;node&#39;)].input_id).sum())</span>
+        <span class="c1"># print(batch[(&#39;node&#39;, &#39;to&#39;, &#39;node&#39;)].edge_index)</span>
+        <span class="c1"># print(batch[(&#39;node&#39;, &#39;to&#39;, &#39;node&#39;)].edge_label_index)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">HeteroData</span><span class="p">):</span>
+            <span class="c1"># Only changing the x itself can make sure the to_homogeneous() function works well later</span>
+            <span class="k">for</span> <span class="n">edge_type</span><span class="p">,</span> <span class="n">edge_attr</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="s2">&quot;edge_attr&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">batch</span><span class="p">[</span><span class="n">edge_type</span><span class="p">]</span><span class="o">.</span><span class="n">edge_attr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">[</span><span class="s1">&#39;__&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">edge_type</span><span class="p">)](</span><span class="n">edge_attr</span><span class="p">)</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">edge_attr</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">edge_attr</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">edge_attr</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">](</span><span class="n">edge_attr</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">batch</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, H2GB Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

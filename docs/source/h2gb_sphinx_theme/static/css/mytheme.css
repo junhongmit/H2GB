@@ -166,6 +166,11 @@ table.colwidths-given tr th:first-child p {
 html.writer-html5 .rst-content table.docutils th {
   border: none;
 }
+.centered-table th, 
+.centered-table td {
+  text-align: center;
+  vertical-align: middle;
+}
 
 /* Code */
 div.highlight,

@@ -158,40 +158,50 @@ class HeteroPENodeEncoder(torch.nn.Module):
         return batch
 
 
-@register_node_encoder('Hetero_RWSE')
-class RWSENodeEncoder(HeteroPENodeEncoder):
-    """Random Walk Structural Encoding node encoder.
-    """
-    kernel_type = 'Hetero_RWSE'
-
-
 @register_node_encoder('Hetero_Metapath')
 class MetapathNodeEncoder(HeteroPENodeEncoder):
-    """Metapath2Vec based Structural Encoding node encoder.
+    """Metapath2Vec based node encoder, based on the MetaPath2Vec model
+    from the `"metapath2vec: Scalable Representation
+    Learning for Heterogeneous Networks"
+    <https://ericdongyx.github.io/papers/
+    KDD17-dong-chawla-swami-metapath2vec.pdf>`_ paper where random walks based
+    on a given :obj:`metapath` are sampled in a heterogeneous graph, and node
+    embeddings are learned via negative sampling optimization.
     """
     kernel_type = 'Hetero_Metapath'
 
 @register_node_encoder('Hetero_Node2Vec')
 class Node2VecNodeEncoder(HeteroPENodeEncoder):
-    """Node2Vec based Structural Encoding node encoder.
+    """Node2Vec based node encoder, based on the Node2Vec model
+    from the `"node2vec: Scalable Feature Learning for Networks"
+    <https://arxiv.org/abs/1607.00653>`_ paper where random walks of
+    length :obj:`walk_length` are sampled in a given graph, and node embeddings
+    are learned via negative sampling optimization.
     """
     kernel_type = 'Hetero_Node2Vec'
 
 @register_node_encoder('Hetero_TransE')
 class TransENodeEncoder(HeteroPENodeEncoder):
-    """Random Walk Structural Encoding node encoder.
+    """Knowledge Graph Embedding node encoder, based on the TransE model
+    from the `"Translating Embeddings for Modeling
+    Multi-Relational Data" <https://proceedings.neurips.cc/paper/2013/file/
+    1cecc7a77928ca8133fa24680a88d2f9-Paper.pdf>`_ paper.
     """
     kernel_type = 'Hetero_TransE'
 
 @register_node_encoder('Hetero_ComplEx')
 class ComplExNodeEncoder(HeteroPENodeEncoder):
-    """Random Walk Structural Encoding node encoder.
+    """Knowledge Graph Embedding node encoder, based on the ComplEx model
+    from the `"Complex Embeddings for Simple Link
+    Prediction" <https://arxiv.org/abs/1606.06357>`_ paper.
     """
     kernel_type = 'Hetero_ComplEx'
 
 @register_node_encoder('Hetero_DistMult')
 class DistMultNodeEncoder(HeteroPENodeEncoder):
-    """Random Walk Structural Encoding node encoder.
+    """Knowledge Graph Embedding node encoder, based on the DistMult model
+    from the `"Embedding Entities and Relations for Learning and Inference
+    in Knowledge Bases" <https://arxiv.org/abs/1412.6575>`_ paper.
     """
     kernel_type = 'Hetero_DistMult'
 

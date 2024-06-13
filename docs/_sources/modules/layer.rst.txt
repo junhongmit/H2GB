@@ -4,14 +4,14 @@ H²GB
 Tensor Objects
 --------------
 
-.. currentmodule:: H2GB
+.. .. currentmodule:: H2GB
 
-.. autosummary::
-   :nosignatures:
-   :toctree: ../generated
+.. .. autosummary::
+..    :nosignatures:
+..    :toctree: ../generated
 
-   Index
-   EdgeIndex
+..    Index
+..    EdgeIndex
 
 Functions
 ---------

@@ -1,11 +1,11 @@
 Introduction by Example
 =======================
 
-We shortly introduce the datasets provided by :h2gb:`H²GB` and the versatile :unifiedgt:`UnifiedGT` framework through self-contained examples.
+We shortly introduce the datasets provided by :h2gb:`ℋ²GB` and the versatile :unifiedgt:`UnifiedGT` framework through self-contained examples.
 
 For an introduction to Graph Machine Learning, we refer the interested reader to the :stanford:`null` `Stanford CS224W: Machine Learning with Graphs <https://www.youtube.com/watch?v=JAB_plj2rbA>`__ lectures.
 
-At its core, :h2gb:`H²GB` provides the following main features:
+At its core, :h2gb:`ℋ²GB` provides the following main features:
 
 .. contents::
     :local:
@@ -20,9 +20,65 @@ The class labels of fraudsters differ from those of their innocent neighbors, ma
 .. image:: ../_static/example.png
   :align: center
 
-|
+In :h2gb:`ℋ²GB`, we provide 9 diverse real-world datasets across 5 domains -- academia, finance, e-commerce, social science, and cybersecurity.
 
-In :h2gb:`H²GB`, we provide 9 diverse real-world datasets across 5 domains -- academia, finance, e-commerce, social science, and cybersecurity.
+|pic1| |pic2| |pic3| |pic4| |pic5|
+
+.. |pic1| image:: ../_static/domain_academia.png
+   :width: 19%
+   :target: ../modules/datasets.html#academia
+
+.. |pic2| image:: ../_static/domain_finace.png
+   :width: 19%
+   :target: ../modules/datasets.html#finace
+
+.. |pic3| image:: ../_static/domain_ecommerce.png
+   :width: 19%
+   :target: ../modules/datasets.html#ecommerce
+
+.. |pic4| image:: ../_static/domain_social.png
+   :width: 19%
+   :target: ../modules/datasets.html#social
+
+.. |pic5| image:: ../_static/domain_cybersecurity.png
+   :width: 19%
+   :target: ../modules/datasets.html#cybersecurity
+
+
+Dataset Loading
+---------------
+
+Datasets can be easily loaded through the :obj:`create_dataset()` method. :h2gb:`ℋ²GB` is gloablly configured by an internal
+config tree. In the following example, we demonstrate that by loading an external :obj:`mag-year-MLP` configuration file, you
+are able to access the :obj:`mag-year` dataset. 
+
+.. Note::
+    It's also possible to directly modify the attributes inside the :obj:`cfg` variable,
+    without the need to load an external configuration file.
+
+.. code-block:: python
+    
+    import argparse
+    import H2GB
+    from H2GB.graphgym.config import cfg, set_cfg, load_cfg
+    from H2GB.graphgym.loader import create_dataset
+
+    # Load cmd line args
+    parser = argparse.ArgumentParser(description='H2GB')
+    parser.add_argument('--cfg', dest='cfg_file', type=str, required=True,
+                        help='The configuration file path.')
+    parser.add_argument('opts', default=None, nargs=argparse.REMAINDER,
+                        help='See graphgym/config.py for remaining options.')
+
+    args = parser.parse_args(["--cfg", "configs/mag-year/mag-year-MLP.yaml"])
+    # Load config file
+    set_cfg(cfg)
+    load_cfg(cfg, args)
+
+    dataset = create_dataset()
+    data = dataset[0]
+    print(dataset)
+    print(data)
 
 Data Handling of Graphs
 -----------------------

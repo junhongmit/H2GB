@@ -16,7 +16,7 @@ function calc_homophily {
     fi
 
     main="python -m H2GB.calcHomophily --cfg ${cfg_file}"
-    out_dir="/nobackup/users/junhong/Logs/results/${dataset}/homophily.log"  # <-- Set the output dir.
+    out_dir="/nobackup/users/junhong/Logs/results/${dataset}/homohomophily.log"  # <-- Set the output dir.
 
     echo "Run program: ${main} > ${out_dir}"
 
@@ -33,9 +33,9 @@ cfg_dir="configs"
 
 # calc_homophily  ogbn-mag  MLP
 # calc_homophily  mag-year  MLP
-# calc_homophily  oag-chem  MLP
 # calc_homophily  oag-cs  MLP
 # calc_homophily  oag-eng  MLP
+# calc_homophily  oag-chem  MLP
 # calc_homophily  RCDD  MLP
 # calc_homophily  IEEE-CIS  MLP
 # calc_homophily  Pokec  MLP

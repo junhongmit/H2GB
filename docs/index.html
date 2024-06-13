@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>H²GB Documentation &mdash; H2GB 1.0.0 documentation</title>
+  <title>ℋ²GB Documentation &mdash; H2GB 1.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="_static/css/mytheme.css" />
 
@@ -47,7 +47,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Install H²GB</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Install ℋ²GB</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install/installation.html">Installation</a></li>
 </ul>
@@ -75,7 +75,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">H²GB Documentation</li>
+      <li class="breadcrumb-item active">ℋ²GB Documentation</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
               <a href="https://github.com/junhongmit/H2GB" class="fa fa-github"> Edit on GitHub</a>
@@ -86,22 +86,25 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="h2gb-documentation">
-<h1>H²GB Documentation<a class="headerlink" href="#h2gb-documentation" title="Permalink to this heading"></a></h1>
-<p><span class="inline-logo h2gb empty"></span> <strong>H²GB</strong> <em>(Heterophilic and Heterogeneous Graph Benchmark)</em> is a library built
+  <section id="gb-documentation">
+<h1>ℋ²GB Documentation<a class="headerlink" href="#gb-documentation" title="Permalink to this heading"></a></h1>
+<p><span class="inline-logo h2gb empty"></span> <strong>ℋ²GB</strong> <em>(Heterophilic and Heterogeneous Graph Benchmark)</em> is a library built
 upon <span class="inline-logo pytorch empty"></span> <a class="reference external" href="https://pytorch.org">PyTorch</a>, <span class="inline-logo pyg empty"></span> <a class="reference external" href="https://www.pyg.org/">PyTorch Geometric</a> and
 <span class="inline-logo graphgym empty"></span> <a class="reference external" href="https://github.com/snap-stanford/GraphGym">GraphGym</a>.
 It is a collection of graph benchmark datasets, data loaders, modular graph transformer framework
-(UnifiedGT) and evaluators for graph learning. The H²GB encompasses 9 diverse real-world datasets
-across 5 domains. Its data loaders are fully compatible with popular graph deep learning framework
+(<span class="inline-logo unifiedgt">UnifiedGT</span>) and evaluators designed to systematically evaluate graph learning methods in both heterophilic
+and heterogeneous settings. As shown in the figure, <span class="inline-logo h2gb empty"></span> ℋ²GB encompasses 9 diverse real-world datasets
+across 5 domains.</p>
+<p>We developed <span class="inline-logo unifiedgt">UnifiedGT</span>, a modular graph transformer (GT) framework to summarize and systematically compare the performance of existing graph neural networks (GNNs) on this new
+benchmark. <span class="inline-logo unifiedgt">UnifiedGT</span> is implemented as a Python library and is user-friendly. It includes a unified data loader and evaluator,
+making it easy to access datasets, evaluate methods, and compare performance. Its data loaders are fully compatible with popular graph deep learning framework
 <span class="inline-logo pyg empty"></span> PyTorch Geometric. They provide automatic dataset downloading, standardized dataset splits,
 and unified performance evaluation.</p>
-<img alt="_images/flowchart_v2_color.png" class="align-center" src="_images/flowchart_v2_color.png" />
-<div class="line-block">
-<div class="line"><br /></div>
-</div>
+<a class="reference external image-reference" href="get_started/introduction.html"><img alt="_images/flowchart_v2_color.png" class="align-center" src="_images/flowchart_v2_color.png" /></a>
+<p><span class="inline-logo h2gb empty"></span> ℋ²GB includes heterophilic and heterogeneous graph datasets from 5 domains. You can find datasets categorized by domains through the following image link:</p>
+<p><a class="reference external" href="modules/datasets.html#academia"><img alt="pic1" src="_images/domain_academia.png" style="width: 19%;" /></a> <a class="reference external" href="modules/datasets.html#finace"><img alt="pic2" src="_images/domain_finace.png" style="width: 19%;" /></a> <a class="reference external" href="modules/datasets.html#ecommerce"><img alt="pic3" src="_images/domain_ecommerce.png" style="width: 19%;" /></a> <a class="reference external" href="modules/datasets.html#social"><img alt="pic4" src="_images/domain_social.png" style="width: 19%;" /></a> <a class="reference external" href="modules/datasets.html#cybersecurity"><img alt="pic5" src="_images/domain_cybersecurity.png" style="width: 19%;" /></a></p>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Install H²GB</span></p>
+<p class="caption" role="heading"><span class="caption-text">Install ℋ²GB</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install/installation.html">Installation</a></li>
 </ul>
@@ -119,14 +122,6 @@ and unified performance evaluation.</p>
 <li class="toctree-l1"><a class="reference internal" href="modules/layer.html">H²GB</a></li>
 </ul>
 </div>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
 </section>
 
 

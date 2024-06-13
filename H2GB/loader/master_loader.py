@@ -166,7 +166,7 @@ def load_dataset_master(format, name, dataset_dir):
             dataset_dir = osp.join(dataset_dir, 'mag')
         else:
             dataset_dir = osp.join(dataset_dir, pyg_dataset_id)
-
+        
         if pyg_dataset_id == 'DBLP':
             dataset = preformat_DBLP(dataset_dir)
 

@@ -14,3 +14,24 @@ __all__ = classes = [
     'PokecDataset',
     'PDNSDataset',
 ]
+
+academia_datasets = [
+    'MAGDataset',
+    'OAGDataset',
+]
+
+finance_datasets = [
+    'IeeeCisDataset',
+]
+
+ecommerce_datasets = [
+    'RCDDDataset',
+]
+
+social_science_datasets = [
+    'PokecDataset',
+]
+
+cybersecurity_datasets = [
+    'PDNSDataset',
+]

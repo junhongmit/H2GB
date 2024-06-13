@@ -78,7 +78,7 @@ DATASET="oag-chem"
 # run_repeats ${DATASET} SAGE-SAGE+GT       "name_tag SAGE-SAGE+GT+TypeFFN"
 
 DATASET="oag-cs"
-run_repeats ${DATASET} MLP                "name_tag MLP"
+# run_repeats ${DATASET} MLP                "name_tag MLP"
 # run_repeats ${DATASET} MLP+Metapath       "name_tag MLP+Metapath"
 # run_repeats ${DATASET} MLP+Node2Vec         "name_tag MLP+Node2Vec"
 # run_repeats ${DATASET} LP+1Hop            "name_tag LP+1Hop"

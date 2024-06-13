@@ -7,14 +7,7 @@ from torch_geometric.utils import degree
 from torch_geometric.data import HeteroData
 
 
-import H2GB  # noqa, register custom modules
-from H2GB.graphgym.cmd_args import parse_args
-from H2GB.graphgym.config import (cfg, set_cfg, load_cfg)
-from H2GB.graphgym.loader import create_dataset
-from H2GB.graphgym.utils.device import auto_select_device
-
-
-def calcHomophily(data: HeteroData, chunk_size: int = 200):
+def calcHomophily(data: HeteroData, task_entity: str = None, chunk_size: int = 200):
     r"""
     Calculate homophily index on a given heterogeneous graph.
     
@@ -88,6 +81,9 @@ def calcHomophily(data: HeteroData, chunk_size: int = 200):
 
     Args:
         data (HeteroData): The input heterogeneous graph.
+        task_entity (str): The task entity (target node type) that include the
+            class labels, for example :obj:`"paper"` for an academic network.
+            (default: :obj:`None`)
         chunk_size (int, optional): The chunk size of the metapath-induced
             subgraph calculation. (default: 200)
     """
@@ -106,15 +102,15 @@ def calcHomophily(data: HeteroData, chunk_size: int = 200):
                 extract_metapath(edge_types, dst, metapath + [edge_type], hop - 1, task_entity)
         return results
 
-    metapaths = extract_metapath(data.edge_types, cfg.dataset.task_entity, [], 2, cfg.dataset.task_entity)
+    metapaths = extract_metapath(data.edge_types, task_entity, [], 2, task_entity)
     print(metapaths)
 
-
-    label = data[cfg.dataset.task_entity].y.to(cfg.device)
+    label = data[task_entity].y
+    device = label.device
     # Some dataset are not fully labeled. We fill in a random class label
     num_classes = label.max() + 1
     mask = label == -1
-    label[mask] = torch.randint(0, num_classes, size=(mask.sum(),), device=cfg.device)
+    label[mask] = torch.randint(0, num_classes, size=(mask.sum(),), device=device)
 
     h_edges = []
     h_insensitives = []
@@ -127,9 +123,9 @@ def calcHomophily(data: HeteroData, chunk_size: int = 200):
         edge_index_1 = data[metapath[0]].edge_index
         edge_index_2 = data[metapath[1]].edge_index
         adj_1 = SparseTensor(row=edge_index_1[0], col=edge_index_1[1], value=None,
-                            sparse_sizes=(m, n)).to(cfg.device)
+                            sparse_sizes=(m, n)).to(device)
         adj_2 = SparseTensor(row=edge_index_2[0], col=edge_index_2[1], value=None,
-                            sparse_sizes=(n, k)).to(cfg.device)
+                            sparse_sizes=(n, k)).to(device)
 
         # Chunked multiplication
         num_nodes = label.shape[0]
@@ -141,9 +137,9 @@ def calcHomophily(data: HeteroData, chunk_size: int = 200):
 
         n_rows = adj_1.size(0)
         nomin, denomin = 0, 0
-        nomin = torch.zeros(num_classes, device=label.device, dtype=torch.float64)
-        denomin = torch.zeros(num_classes, device=label.device, dtype=torch.float64)
-        deg = torch.zeros(num_nodes).to(label.device)
+        nomin = torch.zeros(num_classes, device=device, dtype=torch.float64)
+        denomin = torch.zeros(num_classes, device=device, dtype=torch.float64)
+        deg = torch.zeros(num_nodes).to(device)
         pbar = tqdm(range(0, n_rows, chunk_size))
         for i in pbar:
             end = min(i + chunk_size, n_rows)
@@ -156,7 +152,7 @@ def calcHomophily(data: HeteroData, chunk_size: int = 200):
             num_edges += edge_index.shape[1]
             deg += degree(edge_index[1], num_nodes=num_nodes)
 
-            out = torch.zeros(row.size(0), device=row.device, dtype=torch.float64)
+            out = torch.zeros(row.size(0), device=device, dtype=torch.float64)
             out[label[row + i] == label[col]] = 1.
             nomin.scatter_add_(0, label[col], out)
             denomin.scatter_add_(0, label[col], out.new_ones(row.size(0)))
@@ -171,7 +167,7 @@ def calcHomophily(data: HeteroData, chunk_size: int = 200):
             h_insensitive = float((h_insensitive - proportions).clamp_(min=0).sum(dim=-1))
             h_insensitive /= num_classes - 1
 
-            degree_sums = torch.zeros(num_classes).to(label.device)
+            degree_sums = torch.zeros(num_classes).to(device)
             degree_sums.index_add_(dim=0, index=label, source=deg)
             adjust = (degree_sums**2).sum() / float(num_edges ** 2)
             h_adj = (h_edge - adjust) / (1 - adjust)
@@ -192,7 +188,14 @@ def calcHomophily(data: HeteroData, chunk_size: int = 200):
 
     return h_edges, h_insensitives, h_adjs
 
+
 if __name__ == '__main__':
+    import H2GB  # noqa, register custom modules
+    from H2GB.graphgym.cmd_args import parse_args
+    from H2GB.graphgym.config import (cfg, set_cfg, load_cfg)
+    from H2GB.graphgym.loader import create_dataset
+    from H2GB.graphgym.utils.device import auto_select_device
+
     # Load cmd line args
     parser = argparse.ArgumentParser(description='H2GB')
     parser.add_argument('--cfg', dest='cfg_file', type=str, required=True,
@@ -217,5 +220,6 @@ if __name__ == '__main__':
 
     dataset = create_dataset()
     data = dataset[0]
+    data = data.to(cfg.device)
 
-    calcHomophily(data)
+    calcHomophily(data, cfg.dataset.task_entity)

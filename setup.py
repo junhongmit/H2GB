@@ -6,7 +6,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name='H2GB',
-    version='0.1.2',
+    version='0.1.0',
     description='A graph benchmark library for heterophilic and heterogeneous graphs',
     long_description=long_description,
     long_description_content_type='text/markdown',

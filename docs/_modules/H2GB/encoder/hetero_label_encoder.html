@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H2GB.encoder.hetero_label_encoder &mdash; H2GB 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/mytheme.css" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/logo.png"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/js/version_alert.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Install ℋ²GB</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../install/installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/introduction.html">Introduction by Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/datasets.html">H2GB.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/sampler.html">H2GB.sampler</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/encoder.html">H2GB.encoder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/layer.html">H²GB</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">H2GB</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">H2GB.encoder.hetero_label_encoder</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for H2GB.encoder.hetero_label_encoder</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">torch_geometric.data</span> <span class="kn">import</span> <span class="n">HeteroData</span>
+
+<span class="kn">from</span> <span class="nn">H2GB.graphgym.config</span> <span class="kn">import</span> <span class="n">cfg</span>
+<span class="kn">from</span> <span class="nn">H2GB.graphgym.register</span> <span class="kn">import</span> <span class="n">register_node_encoder</span><span class="p">,</span> <span class="n">register_edge_encoder</span>
+
+
+<div class="viewcode-block" id="HeteroLabelNodeEncoder"><a class="viewcode-back" href="../../../generated/H2GB.encoder.HeteroLabelNodeEncoder.html#H2GB.encoder.HeteroLabelNodeEncoder">[docs]</a><span class="nd">@register_node_encoder</span><span class="p">(</span><span class="s1">&#39;Hetero_Label&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">HeteroLabelNodeEncoder</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The label node encoder for masked label embedding.</span>
+
+<span class="sd">    Apply the one-hot encoded label vector to an embedding matrix to extract</span>
+<span class="sd">    the label embedding. The label embedding is randomly masked to avoid information</span>
+<span class="sd">    leakage.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        emb_dim (int): Output embedding dimension</span>
+<span class="sd">        dataset (Any): A :class:`~torch_geometric.data.InMemoryDataset` dataset object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim_emb</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">reshape_x</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim_in</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">share</span><span class="o">.</span><span class="n">dim_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim_out</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">share</span><span class="o">.</span><span class="n">dim_out</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">metadata</span><span class="p">()</span>
+        <span class="n">pecfg</span>         <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">posenc_Hetero_Label</span>
+        <span class="n">dim_hidden</span>    <span class="o">=</span> <span class="n">pecfg</span><span class="o">.</span><span class="n">dim_pe</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dim_emb</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">dim_emb</span> <span class="o">=</span> <span class="p">{</span><span class="n">node_type</span><span class="p">:</span> <span class="n">dim_emb</span> <span class="k">for</span> <span class="n">node_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_in</span><span class="p">}</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">()</span>
+        <span class="n">node_type</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">task_entity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dim_out</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim_emb</span><span class="p">[</span><span class="n">node_type</span><span class="p">])</span>
+        
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.7</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">HeteroData</span><span class="p">):</span>
+            <span class="n">node_type</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">task_entity</span>
+            <span class="k">if</span> <span class="n">batch</span><span class="o">.</span><span class="n">split</span> <span class="o">==</span> <span class="s1">&#39;test&#39;</span><span class="p">:</span>
+                <span class="c1"># Make use of both training and validation label during testing</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">train_mask</span> <span class="o">|</span> <span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">val_mask</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Make use of only training label during training/validation</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">train_mask</span>
+            <span class="c1"># label = batch[node_type].y[mask].squeeze().clone()</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="n">label</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_out</span>
+            <span class="k">if</span> <span class="n">batch</span><span class="o">.</span><span class="n">split</span> <span class="o">==</span> <span class="s1">&#39;train&#39;</span><span class="p">:</span>
+                <span class="n">ratio</span> <span class="o">=</span> <span class="n">p</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> 
+                <span class="k">if</span> <span class="n">ratio</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>       
+                    <span class="n">index</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">ratio</span><span class="p">]</span>            
+                    <span class="n">label</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_out</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">label</span><span class="p">[:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_out</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim_out</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            
+            <span class="c1"># Only changing the x itself can make sure the to_homogeneous() function works well later</span>
+            <span class="c1"># batch[node_type].x = torch.cat((batch[node_type].x, self.linear(label)), dim=-1)</span>
+            <span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="n">node_type</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">batch</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">](</span><span class="n">x</span><span class="p">)</span>
+
+            
+
+        <span class="k">return</span> <span class="n">batch</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, H2GB Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

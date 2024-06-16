@@ -10,10 +10,15 @@ from H2GB.graphgym.register import register_node_encoder, register_edge_encoder
 @register_node_encoder('Hetero_Label')
 class HeteroLabelNodeEncoder(torch.nn.Module):
     """
-    The label node encoder for label propagation
+    The label node encoder for masked label embedding.
+
+    Apply the one-hot encoded label vector to an embedding matrix to extract
+    the label embedding. The label embedding is randomly masked to avoid information
+    leakage.
 
     Args:
         emb_dim (int): Output embedding dimension
+        dataset (Any): A :class:`~torch_geometric.data.InMemoryDataset` dataset object.
     """
     def __init__(self, dim_emb, dataset, reshape_x=True):
         super().__init__()

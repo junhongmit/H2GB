@@ -12,6 +12,7 @@ from .hetero_raw_encoder import HeteroRawNodeEncoder, HeteroRawEdgeEncoder
 from .hetero_pos_encoder import (HeteroPENodeEncoder, MetapathNodeEncoder,
                                  Node2VecNodeEncoder, TransENodeEncoder,
                                  ComplExNodeEncoder, DistMultNodeEncoder)
+from .hetero_label_encoder import HeteroLabelNodeEncoder
 encoders = [
     'RawNodeEncoder',
     'RawEdgeEncoder',
@@ -22,5 +23,6 @@ encoders = [
     'Node2VecNodeEncoder',
     'TransENodeEncoder',
     'ComplExNodeEncoder',
-    'DistMultNodeEncoder'
+    'DistMultNodeEncoder',
+    'HeteroLabelNodeEncoder',
 ]

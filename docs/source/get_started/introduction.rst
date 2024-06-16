@@ -161,7 +161,7 @@ In the following, we list out the available modular ingredients provided in :uni
      - 
      - 
    * - 
-     - `Masked Label Embedding <>`__
+     - `Masked Label Embedding <../generated/H2GB.encoder.HeteroLabelNodeEncoder.html>`__
      -
      -
      -

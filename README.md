@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-	<a href=""><img src="https://img.shields.io/badge/arXiv-pdf-yellowgreen"></a>
+	<a href="https://arxiv.org/pdf/2407.10916"><img src="https://img.shields.io/badge/arXiv-pdf-yellowgreen"></a>
 	<a href="https://pypi.org/project/H2GB/"><img src="https://img.shields.io/pypi/v/H2GB.svg?color=brightgreen"></a>
 	<a href="https://github.com/junhongmit/H2GB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
 	<a href="https://junhongmit.github.io/H2GB/"><img src="https://img.shields.io/badge/Documentations-orange"></a>

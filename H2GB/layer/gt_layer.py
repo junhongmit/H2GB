@@ -1,7 +1,7 @@
-import math, time
+import math
+import time
 import torch
 import torch_sparse
-import numpy as np
 from torch_scatter import scatter_max
 import torch.nn as nn
 import torch.nn.functional as F
@@ -10,17 +10,15 @@ import H2GB.graphgym.register as register
 from H2GB.graphgym.config import cfg
 from torch_geometric.data import HeteroData
 import torch_geometric.nn as pygnn
-from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.data import Batch
 from torch_geometric.nn.inits import glorot, zeros, ones, reset
 from torch_geometric.nn import (Linear, MLP, HeteroConv, GraphConv, SAGEConv, GINConv, GINEConv, \
-                                GATConv, to_hetero, to_hetero_with_bases)
+                                GATConv)
 from torch_geometric.utils import to_dense_batch, to_undirected
-from torch_geometric.nn import GraphSAGE
 from H2GB.timer import runtime_stats_cuda, is_performance_stats_enabled, enable_runtime_stats, disable_runtime_stats
 
 from H2GB.layer.gatedgcn_layer import GatedGCNLayer
-from H2GB.layer.bigbird_layer import SingleBigBirdLayer
+from H2GB.layer.polyformer_layer import PolyAttn
 
 
 class GTLayer(nn.Module):
@@ -61,11 +59,7 @@ class GTLayer(nn.Module):
         elif global_model_type == 'TorchTransformer':
             self.attn = torch.nn.MultiheadAttention(
                         dim_h, num_heads, dropout=cfg.gt.attn_dropout, batch_first=True)
-            # self.attn = torch.nn.ModuleDict()
-            # for edge_type in metadata[1]:
-            #     edge_type = '__'.join(edge_type)
-            #     self.attn[edge_type] = torch.nn.MultiheadAttention(
-            #             dim_h, num_heads, dropout=cfg.gt.attn_dropout, batch_first=True)
+            
         elif global_model_type == 'NodeTransformer':
             self.k_lin = torch.nn.ModuleDict()
             self.q_lin = torch.nn.ModuleDict()
@@ -77,6 +71,7 @@ class GTLayer(nn.Module):
                 self.q_lin[node_type] = Linear(dim_in, dim_h)
                 self.v_lin[node_type] = Linear(dim_in, dim_h)
                 self.o_lin[node_type] = Linear(dim_h, dim_out)
+            
         elif global_model_type == 'EdgeTransformer':
             self.k_lin = torch.nn.ModuleDict()
             self.q_lin = torch.nn.ModuleDict()
@@ -89,6 +84,7 @@ class GTLayer(nn.Module):
                 self.q_lin[edge_type] = Linear(dim_in, dim_h)
                 self.v_lin[edge_type] = Linear(dim_in, dim_h)
                 self.o_lin[edge_type] = Linear(dim_h, dim_out)
+            
         elif global_model_type == 'SparseNodeTransformer' or global_model_type == 'SparseNodeTransformer_Test':
             self.k_lin = torch.nn.ModuleDict()
             self.q_lin = torch.nn.ModuleDict()
@@ -106,6 +102,7 @@ class GTLayer(nn.Module):
                 self.msg_weights = nn.Parameter(torch.Tensor(len(metadata[1]), H, D, D))
                 nn.init.xavier_uniform_(self.edge_weights)
                 nn.init.xavier_uniform_(self.msg_weights)
+            
         elif global_model_type == 'SparseEdgeTransformer' or global_model_type == 'SparseEdgeTransformer_Test':
             self.k_lin = torch.nn.ModuleDict()
             self.q_lin = torch.nn.ModuleDict()
@@ -124,6 +121,9 @@ class GTLayer(nn.Module):
                 self.g_lin[edge_type] = Linear(dim_h, dim_out)
                 self.oe_lin[edge_type] = Linear(dim_h, dim_out)
                 self.o_lin[edge_type] = Linear(dim_h, dim_out)
+            
+        elif global_model_type == 'PolyFormer':
+            self.attn = PolyAttn(dim_h, num_heads)
             
         # Local MPNNs
         norm = None
@@ -174,40 +174,7 @@ class GTLayer(nn.Module):
                 in_dim=self.dim_in, out_dim=self.dim_out,
                 dropout=cfg.gnn.dropout, residual=True, act=cfg.gnn.act
             )
-        
-        # elif local_gnn_type == "SAGE":
-        #     self.local_gnn_with_edge_attr = False
-        #     # self.local_model = pygnn.GCNConv(dim_h, dim_h)
-        #     self.local_model = Sequential('x, edge_index', [(pygnn.SAGEConv(dim_h, dim_h), 'x, edge_index -> x')])
-        # elif local_gnn_type == 'GIN':
-        #     self.local_gnn_with_edge_attr = False
-        #     gin_nn = nn.Sequential(Linear(dim_h, dim_h),
-        #                            self.activation(),
-        #                            Linear(dim_h, dim_h))
-        #     self.local_model = pygnn.GINConv(gin_nn)
-        # # MPNNs supporting also edge attributes.
-        # elif local_gnn_type == 'GENConv':
-        #     self.local_model = pygnn.GENConv(dim_h, dim_h)
-        # elif local_gnn_type == 'GINE':
-        #     gin_nn = nn.Sequential(Linear(dim_h, dim_h),
-        #                            self.activation(),
-        #                            Linear(dim_h, dim_h))
-        #     # if self.equivstable_pe:  # Use specialised GINE layer for EquivStableLapPE.
-        #     #     self.local_model = GINEConvESLapPE(gin_nn)
-        #     # else:
-        #     self.local_model = pygnn.GINEConv(gin_nn)
-        # elif local_gnn_type == 'GAT':
-        #     self.local_model = pygnn.GATConv(in_channels=dim_h,
-        #                                      out_channels=dim_h // num_heads,
-        #                                      heads=num_heads,
-        #                                      edge_dim=dim_h)
-        # if self.local_model != None:
-        #     self.local_model = to_hetero(self.local_model, metadata, aggr='sum')
 
-
-
-            # self.norm2 = pygnn.norm.GraphNorm(dim_h)
-            # self.norm2 = pygnn.norm.InstanceNorm(dim_h)
         self.norm1_local = torch.nn.ModuleDict()
         self.norm1_global = torch.nn.ModuleDict()
         self.norm2_ffn = torch.nn.ModuleDict()
@@ -450,67 +417,6 @@ class GTLayer(nn.Module):
                         out_type = h[:, node_type_tensor == idx, :]
                         h_attn_dict_list[node_type].append(out_type.squeeze())
 
-                # for edge_type, edge_index in edge_index_dict.items():
-                #     src, _, dst = edge_type
-                #     edge_type = '__'.join(edge_type)
-                #     if hasattr(batch, 'batch'): # With batch dimension
-                #         h_dense, key_padding_mask = to_dense_batch(h_dict[src], batch.batch)
-                #         q = h_dense
-                #         k = h_dense
-                #         v = h_dense
-                #         h_attn, A = self.attn[edge_type](q, k, v,
-                #                     attn_mask=None,
-                #                     key_padding_mask=~key_padding_mask,
-                #                     need_weights=True)
-                #                     # average_attn_weights=False)
-                #         h_attn = h_attn[key_padding_mask]
-
-                #         # attn_weights = A.detach().cpu()
-                #         h_attn_dict_list[dst].append(h_attn)
-                #     else:
-                #         L = h_dict[dst].shape[0]
-                #         S = h_dict[src].shape[0]
-                #         q = h_dict[dst].view(1, -1, D)
-                #         k = h_dict[src].view(1, -1, D)
-                #         v = h_dict[src].view(1, -1, D)
-
-                #         if cfg.gt.attn_mask in ['Edge', 'kHop']:
-                #             if cfg.gt.attn_mask == 'kHop':
-                #                 with torch.no_grad():
-                #                     ones = torch.ones(edge_index.shape[1], device=edge_index.device)
-
-                #                     edge_index_list = [edge_index]
-                #                     edge_index_k = edge_index
-                #                     for i in range(1, self.kHop):
-                #                         # print(edge_index_k.shape, int(edge_index_k.max()), L)
-                #                         edge_index_k, _ = torch_sparse.spspmm(edge_index_k, torch.ones(edge_index_k.shape[1], device=edge_index.device), 
-                #                                                             edge_index, ones, 
-                #                                                             L, L, L, True)
-                #                         edge_index_list.append(edge_index_k)
-                                
-                #                 attn_mask = torch.full((L, S), -1e9, dtype=torch.float32, device=edge_index.device)
-                #                 for idx, edge_index in enumerate(reversed(edge_index_list)):
-                #                     attn_mask[edge_index[1, :], edge_index[0, :]] = self.bias[idx]
-                #                 src_nodes, dst_nodes = edge_index_k
-                #                 num_edges = edge_index_k.shape[1]
-                #             else:
-                #                 # Avoid the nan from attention mask
-                #                 attn_mask = torch.full((L, S), -1e9, dtype=torch.float32, device=edge_index.device)
-                #                 attn_mask[edge_index[1, :], edge_index[0, :]] = 1
-                        
-                #         elif cfg.gt.attn_mask == 'Bias':
-                #             attn_mask = batch.attn_bi[self.index, :, :, :]
-                #         else:
-                #             attn_mask = None
-                #         # print(attn_mask, torch.max(attn_mask))
-                #         h, A = self.attn[edge_type](q, k, v,
-                #                     attn_mask=attn_mask,
-                #                     need_weights=True)
-                #                     # average_attn_weights=False)
-
-                #         # attn_weights = A.detach().cpu()
-                #         h_attn_dict_list[dst].append(h.view(-1, D))
-
             elif self.global_model_type == 'NodeTransformer':
                 # st = time.time()
                 H, D = self.num_heads, self.dim_h // self.num_heads
@@ -564,21 +470,6 @@ class GTLayer(nn.Module):
                             attn_mask[edge_index[1, :], edge_index[0, :]] = self.bias[idx]
                         output_mask = torch.zeros(L, 1, dtype=torch.uint8, device=q.device)
                         output_mask[torch.unique(edge_index_k[1, :]), :] = 1
-                # elif cfg.gt.attn_mask == 'Hierarchy':
-                #     with torch.no_grad():
-                #         ones = torch.ones(edge_index.shape[1], device=edge_index.device)
-
-                #         edge_index_k = edge_index
-                #         for i in range(self.index):
-                #             # print(edge_index_k.shape, int(edge_index_k.max()), L)
-                #             edge_index_k, _ = torch_sparse.spspmm(edge_index_k, torch.ones(edge_index_k.shape[1], device=edge_index.device), 
-                #                                                 edge_index, ones, 
-                #                                                 L, L, L, True)
-                    
-                #         attn_mask = torch.zeros(L, L, dtype=torch.uint8, device=q.x.device)
-                #         attn_mask[edge_index_k[1, :], edge_index_k[0, :]] = 1
-                # elif cfg.gt.attn_mask == 'Bias':
-                #     attn_mask = batch.attn_bias[self.index, :, :, :]
                 else:
                     attn_mask = None
                     output_mask = None
@@ -638,15 +529,6 @@ class GTLayer(nn.Module):
                     
                         output_mask = torch.zeros(L, 1, dtype=torch.uint8, device=q.device)
                         output_mask[torch.unique(edge_index_k[1, :]), :] = 1
-
-                        # row, col = edge_index
-                        # edge_index2, _ = torch_sparse.spspmm(edge_index.cpu(), torch.ones(col.shape, device=edge_index.cpu().device), 
-                        #                                     edge_index.cpu(), torch.ones(col.shape, device=edge_index.cpu().device), 
-                        #                                     L, L, L, True)
-                        # edge_index2 = edge_index2.to(q.device)
-                        # attn_mask = torch.ones(H, L, S, device=q.device) * (-1e9)
-                        # attn_mask[:, edge_index2[1, :], edge_index2[0, :]] = self.attn_bias(torch.from_numpy(np.array([1], dtype=int)).to(edge_index.device)).view(-1, 1)
-                        # attn_mask[:, edge_index[1, :], edge_index[0, :]] = self.attn_bias(torch.from_numpy(np.array([0], dtype=int)).to(edge_index.device)).view(-1, 1)
                     elif cfg.gt.attn_mask == 'Bias':
                         attn_mask = batch.attn_bi[self.index, :, :, :]
                     else:
@@ -718,51 +600,6 @@ class GTLayer(nn.Module):
                     if cfg.gt.attn_mask in ['kHop', 'kHop_diffusion']:
                         with torch.no_grad():
                             edge_index_list = [edge_index]
-
-                            # m = batch.num_nodes_dict['paper']
-                            # n = batch.num_nodes_dict['author']
-                            # o = batch.num_nodes_dict['paper']
-                            # edge_index_1 = batch[('paper', 'rev_writes', 'author')].edge_index
-                            # edge_index_2 = batch[('author', 'writes', 'paper')].edge_index
-                            # adj_1 = torch.sparse_coo_tensor(edge_index_1, torch.ones(edge_index_1.size(1)), (m, n), device=edge_index_1.device)
-                            # adj_2 = torch.sparse_coo_tensor(edge_index_2, torch.ones(edge_index_2.size(1)), (n, o), device=edge_index_2.device)
-                            # adj = torch.sparse.mm(adj_1, adj_2)
-                            # edge_index_k = adj.indices()
-                            # edge_index_list.append(edge_index_k)
-
-                            # m = batch.num_nodes_dict['paper']
-                            # n = batch.num_nodes_dict['author']
-                            # o = batch.num_nodes_dict['paper']
-                            # edge_index_1 = batch[('paper', 'rev_AP_write_first', 'author')].edge_index
-                            # edge_index_2 = batch[('author', 'AP_write_first', 'paper')].edge_index
-                            # adj_1 = torch.sparse_coo_tensor(edge_index_1, torch.ones(edge_index_1.size(1)), (m, n), device=edge_index_1.device)
-                            # adj_2 = torch.sparse_coo_tensor(edge_index_2, torch.ones(edge_index_2.size(1)), (n, o), device=edge_index_2.device)
-                            # adj = torch.sparse.mm(adj_1, adj_2)
-                            # edge_index_k = adj.indices()
-                            # edge_index_list.append(edge_index_k)
-
-                            # m = batch.num_nodes_dict['paper']
-                            # n = batch.num_nodes_dict['paper']
-                            # o = batch.num_nodes_dict['paper']
-                            # edge_index_1 = batch[('paper', 'PP_cite', 'paper')].edge_index
-                            # edge_index_2 = batch[('paper', 'PP_cite', 'paper')].edge_index
-                            # adj_1 = torch.sparse_coo_tensor(edge_index_1, torch.ones(edge_index_1.size(1)), (m, n), device=edge_index_1.device)
-                            # adj_2 = torch.sparse_coo_tensor(edge_index_2, torch.ones(edge_index_2.size(1)), (n, o), device=edge_index_2.device)
-                            # adj = torch.sparse.mm(adj_1, adj_2)
-                            # edge_index_k = adj.indices()
-                            # edge_index_list.append(edge_index_k)
-
-                            # m = batch.num_nodes_dict['paper']
-                            # n = batch.num_nodes_dict['author']
-                            # o = batch.num_nodes_dict['paper']
-                            # edge_index_1 = batch[('paper', 'rev_AP_write_other', 'author')].edge_index
-                            # edge_index_2 = batch[('author', 'AP_write_other', 'paper')].edge_index
-                            # adj_1 = torch.sparse_coo_tensor(edge_index_1, torch.ones(edge_index_1.size(1)), (m, n), device=edge_index_1.device)
-                            # adj_2 = torch.sparse_coo_tensor(edge_index_2, torch.ones(edge_index_2.size(1)), (n, o), device=edge_index_2.device)
-                            # adj = torch.sparse.mm(adj_1, adj_2)
-                            # edge_index_k = adj.indices()
-                            # edge_index_list.append(edge_index_k)
-
                             edge_index_k = torch.cat(edge_index_list, dim=1)
 
                             # ones = torch.ones(edge_index.shape[1], device=edge_index.device)
@@ -1020,12 +857,10 @@ class GTLayer(nn.Module):
 
                         # Compute attention scores
                         edge_scores = edge_q * edge_k # (h, edges, d_model)
-                        # print(edge_q.shape, edge_k.shape, edge_scores.shape, edge_attr.shape)
                         if has_edge_attr:
                             edge_scores = edge_scores + edge_attr
                             edge_v = edge_v * F.sigmoid(edge_gate)
                             edge_attr = edge_scores
-                            # edge_attr = edge_attr + self.emlps[i](torch.cat([x[src], x[dst], edge_attr], dim=-1)) / 2
                         # edge_scores = edge_attr
 
                         edge_scores = torch.sum(edge_scores, dim=-1) / math.sqrt(D) # (h, edges)
@@ -1052,12 +887,6 @@ class GTLayer(nn.Module):
                         out = torch.zeros((H, L, D), device=q.device)
                         out.scatter_add_(1, dst_nodes.unsqueeze(-1).expand((H, num_edges, D)), edge_scores * edge_v)
 
-                        # if edge_scores.isnan().any():
-                        #     print('Edge scores has a nan!')
-                        #     print('Dot product:', edge_scores_copy)
-                        #     print('Max scores:', max_scores)
-                        #     print('Sum exp scores:', sum_exp_scores)
-                        #     print('Edge scores:', edge_scores)
                     elif cfg.gt.attn_mask == 'kHop':
                         raise NotImplementedError(f"Two hop attention masking for sparse edge transformer is not implemented!")
                     elif cfg.gt.attn_mask == 'Bias':
@@ -1200,6 +1029,17 @@ class GTLayer(nn.Module):
                         edge_attr = self.oe_lin[edge_type](edge_attr)
                         edge_attr_dict[edge_type_tuple] = edge_attr
                 runtime_stats_cuda.end_region("attention")
+
+            elif self.global_model_type == 'PolyFormer':
+                homo_data = batch.to_homogeneous()
+                edge_index = homo_data.edge_index
+                node_type_tensor = homo_data.node_type
+
+                out = self.attn(homo_data.x)
+                
+                for idx, node_type in enumerate(batch.num_nodes_dict.keys()):
+                    out_type = out[node_type_tensor == idx, :]
+                    h_attn_dict_list[node_type].append(out_type.squeeze())
 
             h_attn_dict = {}
             for node_type in h_attn_dict_list:

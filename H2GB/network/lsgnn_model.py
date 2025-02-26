@@ -292,12 +292,13 @@ class LSGNN(MessagePassing):
                     break
             
             # Add embedding for featureless nodes
-            homo.n_id = self.start_indices[homo.node_type] + homo.n_id
-            nan_mask_batch = self.emb_mask[homo.n_id]
-            nan_indices = torch.where(nan_mask_batch)[0]
-            if len(nan_indices) > 0:
-                local_emb_indices = self.mapping_mask[homo.n_id[nan_indices]]
-                x[nan_indices] = self.emb(local_emb_indices)
+            if self.emb_mask.sum() > 0:
+                homo.n_id = self.start_indices[homo.node_type] + homo.n_id
+                nan_mask_batch = self.emb_mask[homo.n_id]
+                nan_indices = torch.where(nan_mask_batch)[0]
+                if len(nan_indices) > 0:
+                    local_emb_indices = self.mapping_mask[homo.n_id[nan_indices]]
+                    x[nan_indices] = self.emb(local_emb_indices)
         else:
             label, edge_index = batch.y, batch.edge_index
             data = batch

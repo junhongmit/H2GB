@@ -60,6 +60,7 @@ DATASET="oag-chem"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
 # run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+# run_repeats ${DATASET} PolyFormer         "name_tag PolyFormer"
 
 # Proposed GT
 # run_repeats ${DATASET} SparseEdgeGT         "name_tag SparseEdgeGT"
@@ -106,6 +107,7 @@ DATASET="oag-cs"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
 # run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+# run_repeats ${DATASET} PolyFormer         "name_tag PolyFormer wandb.use False"
 
 # Proposed GT
 # run_repeats ${DATASET} FullEdgeGT       "name_tag FullEdgeGT wandb.use False"
@@ -192,13 +194,14 @@ DATASET="oag-eng"
 # run_repeats ${DATASET} RGAT               "name_tag RGAT"
 # run_repeats ${DATASET} HAN                "name_tag HAN"
 # run_repeats ${DATASET} HGT                "name_tag HGT"
-# run_repeats ${DATASET} HINormer           "name_tag HINormer wandb.use False"
+# run_repeats ${DATASET} HINormer           "name_tag HINormer"
 
 # Heterophilic GNN Baselines
 # run_repeats ${DATASET} MixHop               "name_tag MixHop"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
 # run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+# run_repeats ${DATASET} PolyFormer         "name_tag PolyFormer"
 
 # Proposed GT
 # run_repeats ${DATASET} FullEdgeGT       "name_tag FullEdgeGT wandb.use False"
@@ -258,6 +261,7 @@ DATASET="ogbn-mag"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
 # run_repeats ${DATASET} ACM-GCN             "name_tag ACM-GCN" # wandb.use False
 # run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+# run_repeats ${DATASET} PolyFormer         "name_tag PolyFormer"
 
 # Proposed GT
 # run_repeats ${DATASET} FullEdgeGT         "name_tag FullEdgeGT seed 43"
@@ -363,6 +367,7 @@ DATASET="mag-year"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
 # run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+# run_repeats ${DATASET} PolyFormer         "name_tag PolyFormer"
 
 # Proposed GT
 # run_repeats ${DATASET} SparseNodeGT       "name_tag SparseNodeGT"
@@ -420,6 +425,7 @@ DATASET="RCDD"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
 # run_repeats ${DATASET} ACM-GCN             "name_tag ACM-GCN"
 # run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+# run_repeats ${DATASET} PolyFormer         "name_tag PolyFormer"
 
 # Proposed GT
 # run_repeats ${DATASET} SparseNodeGT       "name_tag SparseNodeGT"
@@ -489,6 +495,7 @@ DATASET="IEEE-CIS"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
 # run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+# run_repeats ${DATASET} PolyFormer         "name_tag PolyFormer"
 
 # Proposed GT
 # run_repeats ${DATASET} SparseNodeGT               "name_tag SparseNodeGT"
@@ -530,6 +537,7 @@ DATASET="Pokec"
 # run_repeats ${DATASET} MixHop               "name_tag MixHop"
 # run_repeats ${DATASET} LINKX               "name_tag LINKX"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
+# run_repeats ${DATASET} PolyFormer         "name_tag PolyFormer"
 
 # Proposed GT
 # run_repeats ${DATASET} SparseNodeGT               "name_tag SparseNodeGT_Hetero"
@@ -572,6 +580,7 @@ DATASET="PDNS"
 # run_repeats ${DATASET} FAGCN               "name_tag FAGCN"
 # run_repeats ${DATASET} ACM-GCN             "name_tag ACM-GCN"
 # run_repeats ${DATASET} LSGNN               "name_tag LSGNN"
+# run_repeats ${DATASET} PolyFormer         "name_tag PolyFormer"
 
 # Proposed GT
 # run_repeats ${DATASET} SparseNodeGT               "name_tag SparseNodeGT"

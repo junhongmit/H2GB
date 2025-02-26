@@ -16,7 +16,7 @@ function run_repeats {
         return 1
     fi
 
-    main="python main.py --cfg ${cfg_file} --gpu ${exp_indx}"
+    main="python -m H2GB.main --cfg ${cfg_file} --gpu ${exp_indx}"
     out_dir="/nobackup/users/junhong/Logs/results/${dataset}"  # <-- Set the output dir.
     common_params="out_dir ${out_dir} ${cfg_overrides}"
 
@@ -79,14 +79,14 @@ function run_repeats {
 # )
 
 cfg_dir="configs"
-DATASET="RCDD"
+DATASET="Pokec"
 # "AML-Small-HI"
 # "ogbn-products"
 # "VOCSuperpixels"
 # "COCOSuperpixels"
 # "Heterophilic_arxiv-year"
 # "Heterophilic_snap-patents"
-CONFIG="SGC+1Hop"
+CONFIG="PolyFormer"
 parameters=(
     # Multi-seed experiments
     "seed 43 " # train.auto_resume True

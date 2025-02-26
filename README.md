@@ -12,11 +12,11 @@
 --------------------------------------------------------------------------------
 
 ## Overview
-The Heterophilic and Heterogeneous Graph Benchmark (H²GB) is a collection of graph benchmark datasets, data loaders, modular graph transformer framework (UnifiedGT) and evaluators for graph learning.
-The H²GB encompasses 9 diverse real-world datasets across 5 domains. Its data loaders are fully compatible with popular graph deep learning framework [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/). They provide automatic dataset downloading, standardized dataset splits, and unified performance evaluation.
+The Heterophilic and Heterogeneous Graph Benchmark (ℋ²GB) is a collection of graph benchmark datasets, data loaders, modular graph transformer framework (UnifiedGT) and evaluators for graph learning.
+The ℋ²GB encompasses 9 diverse real-world datasets across 5 domains. Its data loaders are fully compatible with popular graph deep learning framework [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/). They provide automatic dataset downloading, standardized dataset splits, and unified performance evaluation.
 
 <p align='center'>
-  <img src="https://raw.githubusercontent.com/junhongmit/H2GB/main/imgs/flowchart_v2_color.png" width="80%" height="auto"/>
+  <img src="https://raw.githubusercontent.com/junhongmit/H2GB/main/imgs/flowchart_v3.png" width="80%" height="auto"/>
 </p>
 
 ## Environment Setup
@@ -33,10 +33,10 @@ pip install -r requirements.txt
 ```
 
 ## Run the UnifiedGT
-To summarize and systematically compare the performance of existing GNNs on `H2GB`, we designed `UnifiedGT`. `UnifiedGT` is a modular graph transformer framework that  designed to encompass many existing GTs and GNNs by leveraging unified components: (1) graph sampling, (2) graph encoding, (3) graph attention, (4) attention masking, and (5) feedforward networks (FFN). It is implemented as a Python library and is user-friendly. It includes a unified data loader and evaluator, making it easy for researchers to access datasets, evaluate methods, and compare performance.
+To summarize and systematically compare the performance of existing GNNs on `H2GB`, we designed `UnifiedGT`. `UnifiedGT` is a modular graph transformer framework that  designed to encompass many existing GTs and GNNs by leveraging unified components: (1) graph sampling, (2) graph encoding, (3) graph attention, (4) attention masking, (5) heterogeneous GNN, and (6) feedforward networks (FFN). It is implemented as a Python library and is user-friendly. It includes a unified data loader and evaluator, making it easy for researchers to access datasets, evaluate methods, and compare performance.
 
 <p align='center'>
-  <img src="https://raw.githubusercontent.com/junhongmit/H2GB/main/imgs/framework.png" width="80%" height="auto"/>
+  <img src="https://raw.githubusercontent.com/junhongmit/H2GB/main/imgs/framework_v4.png" width="80%" height="auto"/>
 </p> 
 
 We implement 9 existing GT baselines and 19 GNN models based on `UnifiedGT` and provide comprehensive experiment configurations available in `./configs`. To run `UnifiedGT`, you will need to firstly specify the dataset and log location by editing the config file provided under `./configs/{dataset_name}/`. An example configuration is
@@ -65,7 +65,7 @@ For example, the following command is to run `MLP` model experiment for `oag-cs`
 python -m H2GB.main --cfg configs/oag-cs/oag-cs-MLP.yaml name_tag MLP
 ```
 
-## Caclulate the Metapath-Induced Adjusted Heterophily Measurement
+## Caclulate the class-adjusted heterogeneous heterophily index (ℋ² Index)
 We provide a extended heterophily measurement from homogeneous grpah into the heterogeneous setting, which is called metapath-induced heterophily measrement. The calcualtion function is available in `./H2GB/calcHomophily.py`. You can simply import it by using `from H2GB.calcHomophily import calcHomophily` and measure the heterophily of your data. For convenience, we also provide a script to reproduce the heterophily measurement on our developed datasets. Note that $$\text{Heterophily} = 1 - \text{Homophily}$$ So just do a simple transformation to obtain the heterophily.
 ```
 chmox +x ./run/calcHomo.sh

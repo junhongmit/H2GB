@@ -75,46 +75,6 @@ class GTModel(torch.nn.Module):
         self.l2_norm    = cfg.gt.l2_norm
         GNNHead         = register.head_dict[cfg.gt.head]
 
-        # if 'Hetero_kHopAug' in cfg.dataset.node_encoder_name:
-        #     from collections import deque
-        #     # src_dict = {}
-        #     # for edge_type in data.edge_index_dict.keys():
-        #     #     src = edge_type[0]
-        #     #     src_dict[src] = src_dict.get(src, []) + [edge_type]
-        #     src_dict = {'paper': [('paper', 'PP_cite', 'paper'),
-        #         ('paper', 'PF_in_L0', 'field'),
-        #         ('paper', 'PF_in_L1', 'field'),
-        #         ('paper', 'PF_in_L2', 'field'),
-        #         ('paper', 'rev_AP_write_first', 'author')],
-        #         'author': [
-        #         ('author', 'AP_write_first', 'paper'),
-        #         ('author', 'in', 'affiliation')],
-        #         'field': [('field', 'FF_in', 'field'),
-        #         ('field', 'rev_PF_in_L0', 'paper'),
-        #         ('field', 'rev_PF_in_L1', 'paper'),
-        #         ('field', 'rev_PF_in_L2', 'paper')],
-        #         'affiliation': [('affiliation', 'rev_in', 'author')]}
-
-        #     node_types = list(data.x_dict.keys())
-        #     queue = deque([(node_type, []) for node_type in node_types])
-        #     hop = 2
-        #     result = []
-        #     while queue:
-        #         node_type, hist = queue.popleft()
-        #         if len(hist) == hop:
-        #             result.append(hist)
-        #             continue
-        #         for edge_type in src_dict[node_type]:
-        #             dst_node_type = edge_type[2]
-        #             queue.append((dst_node_type, hist + [edge_type]))
-            
-        #     for edge_types in result:
-        #         src_type, rel, _ = edge_types[0]
-        #         for edge_type in edge_types[1:]:
-        #             rel = rel + '+' + edge_type[1]
-        #         new_edge = (edge_types[0][0], rel, edge_types[-1][2])
-        #         self.metadata[1].append(new_edge)
-
         self.encoder = FeatureEncoder(dim_in, dataset)
         self.dim_in = self.encoder.dim_in
 
@@ -146,7 +106,7 @@ class GTModel(torch.nn.Module):
             else:
                 if layer_type in ['TorchTransformer', 'NodeTransformer', 'EdgeTransformer', 
                                   'SparseNodeTransformer', 'SparseEdgeTransformer',
-                                  'SparseEdgeTransformer_Test', 'SparseNodeTransformer_Test']:
+                                  'PolyFormer']:
                     local_gnn_type, global_model_type = 'None', layer_type
                 else:
                     local_gnn_type, global_model_type = layer_type, 'None'
@@ -193,38 +153,14 @@ class GTModel(torch.nn.Module):
         self.norms = nn.ModuleList()
         dim_h_total = self.dim_h
         for i in range(cfg.gt.layers):
-            # if i < cfg.gt.layers - 1:
-            #     conv = GTLayer(cfg.gt.dim_hidden, self.metadata,
-            #                 local_gnn_type, global_model_type, i,
-            #                 cfg.gt.n_heads, 
-            #                 # layer_norm=False,
-            #                 # batch_norm=False)
-            #                 layer_norm=cfg.gt.layer_norm,
-            #                 batch_norm=cfg.gt.batch_norm)
-            # else:
             conv = GTLayer(self.dim_h, self.dim_h, self.dim_h, self.metadata,
                     local_gnn_type, global_model_type, i,
-                    cfg.gt.attn_heads, 
-                    # layer_norm=False,
-                    # batch_norm=False)
+                    cfg.gt.attn_heads,
                     layer_norm=self.layer_norm,
                     batch_norm=self.batch_norm,
                     return_attention=False)
             self.convs.append(conv)
-            # self.convs.append(GPSLayer(
-            #     dim_h=cfg.gt.dim_hidden,
-            #     local_gnn_type=local_gnn_type,
-            #     global_model_type=global_model_type,
-            #     num_heads=cfg.gt.attn_heads,
-            #     act=cfg.gt.act,
-            #     equivstable_pe=cfg.posenc_EquivStableLapPE.enable,
-            #     dropout=cfg.gt.dropout,
-            #     attn_dropout=cfg.gt.attn_dropout,
-            #     layer_norm=cfg.gt.layer_norm,
-            #     batch_norm=cfg.gt.batch_norm,
-            #     # bigbird_cfg=cfg.gt.bigbird,
-            #     log_attn_weights=cfg.train.mode == 'log-attn-weights',
-            # ))
+
             if self.layer_norm or self.batch_norm:
                 self.norms.append(nn.ModuleDict())
                 for node_type in self.metadata[0]:
@@ -247,18 +183,6 @@ class GTModel(torch.nn.Module):
         if self.num_virtual_nodes > 0:
             for node_type in self.virtual_nodes:
                 torch.nn.init.normal_(self.virtual_nodes[node_type])
-
-    # def forward(self, batch):
-    #     x, edge_index = batch.x, batch.edge_index
-
-    #     for i in range(len(self.convs)):
-    #         x = self.convs[i](x, edge_index)
-    #         x = F.relu(x)
-    #         x = F.dropout(x, p=0.1, training=self.training)
-
-    #     batch.x = x
-    #     batch = self.post_mp(batch)
-    #     return batch
 
     def forward(self, batch):
         batch = self.encoder(batch)

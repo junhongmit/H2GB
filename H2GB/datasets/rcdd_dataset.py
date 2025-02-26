@@ -140,8 +140,8 @@ class RCDDDataset(InMemoryDataset):
         y[train_idx] = torch.from_numpy(train_df['label'].values)
         y[test_idx] = torch.from_numpy(test_df['label'].values)
 
+        train_idx, val_idx = train_test_split(train_idx, train_size=0.8)
         train_mask = index_to_mask(train_idx, data['item'].num_nodes)
-        val_idx, test_idx = train_test_split(test_idx, train_size=0.5)
         val_mask = index_to_mask(val_idx, data['item'].num_nodes)
         test_mask = index_to_mask(test_idx, data['item'].num_nodes)
 

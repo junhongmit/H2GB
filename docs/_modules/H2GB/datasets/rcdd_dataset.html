@@ -228,8 +228,8 @@
         <span class="n">y</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">train_df</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
         <span class="n">y</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">test_df</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
 
+        <span class="n">train_idx</span><span class="p">,</span> <span class="n">val_idx</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">train_idx</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
         <span class="n">train_mask</span> <span class="o">=</span> <span class="n">index_to_mask</span><span class="p">(</span><span class="n">train_idx</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;item&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">)</span>
-        <span class="n">val_idx</span><span class="p">,</span> <span class="n">test_idx</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">test_idx</span><span class="p">,</span> <span class="n">train_size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
         <span class="n">val_mask</span> <span class="o">=</span> <span class="n">index_to_mask</span><span class="p">(</span><span class="n">val_idx</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;item&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">)</span>
         <span class="n">test_mask</span> <span class="o">=</span> <span class="n">index_to_mask</span><span class="p">(</span><span class="n">test_idx</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;item&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">)</span>
 
@@ -251,7 +251,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, H2GB Team.</p>
+    <p>&#169; Copyright 2025, H2GB Team.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

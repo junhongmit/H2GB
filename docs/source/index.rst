@@ -17,7 +17,9 @@ making it easy to access datasets, evaluate methods, and compare performance. It
 :pyg:`null` PyTorch Geometric. They provide automatic dataset downloading, standardized dataset splits,
 and unified performance evaluation.
 
-.. image:: ./_static/flowchart_v2_color.png
+We established a standard workflow supporting both model selection and development. The green and blue arrows on top highlight two workflows how users can interact with :h2gb:`null` ℋ²GB.
+
+.. image:: ./_static/flowchart_v3_color.png
   :align: center
   :target: get_started/introduction.html
 

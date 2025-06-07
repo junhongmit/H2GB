@@ -30,7 +30,7 @@ To install :h2gb:`ℋ²GB`, the easiest way is to simply run:
 
 .. code-block:: bash
 
-   pip install torch_geometric
+   pip install H2GB
 
 
 Installation from Github

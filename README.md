@@ -3,19 +3,21 @@
 </p>
 
 <p align="center">
-	<a href="https://arxiv.org/pdf/2407.10916"><img src="https://img.shields.io/badge/arXiv-pdf-yellowgreen"></a>
+	<a href="https://arxiv.org/pdf/2407.10916"><img src="https://img.shields.io/badge/arXiv-2407.10916-yellowgreen"></a>
 	<a href="https://pypi.org/project/H2GB/"><img src="https://img.shields.io/pypi/v/H2GB.svg?color=brightgreen"></a>
 	<a href="https://github.com/junhongmit/H2GB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-	<a href="https://junhongmit.github.io/H2GB/"><img src="https://img.shields.io/badge/Documentations-orange"></a>
+	<a href="https://junhongmit.github.io/H2GB/"><img src="https://img.shields.io/badge/ReadTheDocs-orange"></a>
 </p>
 
 <div align="center">
-  <h1>When Heterophily Meets Heterogeneity:<br>Challenges and a New Large-Scale Graph Benchmark</h1>
+  <h1><a href="https://arxiv.org/abs/2407.10916" style="color: black !important;">When Heterophily Meets Heterogeneity:<br>Challenges and a New Large-Scale Graph Benchmark</a></h1>
+  <strong>Junhong Lin¹</strong>, <strong>Xiaojie Guo²</strong>, <strong>Shuaicheng Zhang³</strong>, <strong>Yada Zhu²</strong>, <strong>Dawei Zhou³</strong>, <strong>Julian Shun¹</strong><br>
+  ¹ MIT CSAIL, ² IBM Research, ³ Virginia Tech
 </div>
 
 --------------------------------------------------------------------------------
 
-## Overview
+## 📌Overview
 The Heterophilic and Heterogeneous Graph Benchmark (ℋ²GB) is a collection of graph benchmark datasets, data loaders, modular graph transformer framework (UnifiedGT) and evaluators for graph learning.
 The ℋ²GB encompasses 9 diverse real-world datasets across 5 domains. Its data loaders are fully compatible with popular graph deep learning framework [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/). They provide automatic dataset downloading, standardized dataset splits, and unified performance evaluation.
 
@@ -35,6 +37,7 @@ conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvi
 conda install pyg -c pyg
 pip install -r requirements.txt
 ```
+
 
 ## Run the UnifiedGT
 To summarize and systematically compare the performance of existing GNNs on `H2GB`, we designed `UnifiedGT`. `UnifiedGT` is a modular graph transformer framework that  designed to encompass many existing GTs and GNNs by leveraging unified components: (1) graph sampling, (2) graph encoding, (3) graph attention, (4) attention masking, (5) heterogeneous GNN, and (6) feedforward networks (FFN). It is implemented as a Python library and is user-friendly. It includes a unified data loader and evaluator, making it easy for researchers to access datasets, evaluate methods, and compare performance.

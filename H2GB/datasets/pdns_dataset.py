@@ -7,11 +7,9 @@ from typing import Optional, List, Callable
 import torch
 from torch_geometric.data import (
     HeteroData,
-    InMemoryDataset,
-    download_url,
-    extract_zip,
+    InMemoryDataset
 )
-from .utils import download_dataset
+from .utils import download_dataset_from_hub
 
 class PDNSDataset(InMemoryDataset):
     r"""
@@ -45,8 +43,6 @@ class PDNSDataset(InMemoryDataset):
             (default: :obj:`False`)
     
     """
-
-    url = 'https://drive.google.com/file/d/1xCU2-kOyAEj3bIe4iBQvflLJkU0NTJVc/view?usp=drive_link'
 
     def __init__(self, root: str, transform: Optional[Callable] = None,
                  pre_transform: Optional[Callable] = None, 
@@ -96,7 +92,7 @@ class PDNSDataset(InMemoryDataset):
     
     def download(self) -> None:
         if not all([osp.exists(f) for f in self.raw_paths]):
-            download_dataset(self.url, self.root)
+            download_dataset_from_hub("junhongmit/H2GB", "PDNS.zip", self.root)
     
     def _load_dataset(self, root):
         edge_type_nodes = {

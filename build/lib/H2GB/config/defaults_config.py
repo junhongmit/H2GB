@@ -26,8 +26,8 @@ def overwrite_defaults_cfg(cfg):
 def extended_cfg(cfg):
     """General extended config options.
     """
-    cfg.out_dir = '/nobackup/users/junhong/Logs/results'
-    cfg.dataset.dir = '/nobackup/users/junhong/Data'
+    cfg.out_dir = './results'
+    cfg.dataset.dir = './data'
 
     # Additional name tag used in `run_dir` and `wandb_name` auto generation.
     cfg.name_tag = ""

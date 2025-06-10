@@ -9,11 +9,9 @@ import torch
 
 from torch_geometric.data import (
     HeteroData,
-    InMemoryDataset,
-    download_url,
-    extract_zip,
+    InMemoryDataset
 )
-from .utils import download_dataset
+from .utils import download_dataset_from_hub
 
 # To prepare the dataset, this piece of code need to be run under GPT-GNN's repo
 class OAGDataset(InMemoryDataset):
@@ -53,10 +51,10 @@ class OAGDataset(InMemoryDataset):
     
     """
 
-    urls = {
-        'cs': 'https://drive.google.com/file/d/115WygJhRo1DxVLpLzJF-hFCamGc7JY5w/view?usp=drive_link',
-        'engineering': 'https://drive.google.com/file/d/1_n605385TzqqaVIiMQcKziSv5BUG4f4Y/view?usp=drive_link',
-        'chemistry': 'https://drive.google.com/file/d/1S13pnOk2-bPevWQafl6lQj8QOy6BK7Ca/view?usp=drive_link'
+    file_names = {
+        'cs': 'OAG_CS_20190919.pt',
+        'engineering': 'OAG_Chemistry.pt',
+        'chemistry': 'OAG_Engineering.pt'
     }
 
     names = {
@@ -74,28 +72,23 @@ class OAGDataset(InMemoryDataset):
         self.data, self.slices = torch.load(self.processed_paths[0])
 
     @property
-    def raw_dir(self) -> str:
-        return osp.join(self.root, self.name, 'raw')
-
-    @property
     def processed_dir(self) -> str:
         return osp.join(self.root, self.name, 'processed')
 
     @property
     def raw_file_names(self) -> List[str]:
-        x = [f'graph_{self.names[self.name]}.pt']
+        x = [f'OAG_{self.names[self.name]}.pt']
         return x
-
+    
     @property
     def processed_file_names(self) -> str:
         return 'data.pt'
 
     def download(self):
-        url = self.urls[self.name]
-        download_dataset(url, self.raw_dir)
+        self.raw_file_name = download_dataset_from_hub("junhongmit/H2GB", self.file_names[self.name], None)
 
     def process(self):
-        graph = torch.load(os.path.join(self.raw_dir, f'graph_{self.names[self.name]}.pt'))
+        graph = torch.load(self.raw_file_name)
         
         data = HeteroData()
 

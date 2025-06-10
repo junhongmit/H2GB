@@ -1,12 +1,12 @@
-out_dir: /nobackup/users/junhong/Logs/results/oag-eng
+out_dir: ./results/oag-eng
 metric_best: accuracy
 seed: 42
 device: cpu
 wandb:
   use: True
-  project: unifiedGT
+  project: h2gb
 dataset:
-  dir: /nobackup/users/junhong/Data
+  dir: ./data
   format: PyG-OAG
   name: engineering
   task: hetero_node

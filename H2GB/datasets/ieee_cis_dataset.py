@@ -5,7 +5,7 @@ import pandas as pd
 import torch
 from torch_geometric.data import HeteroData, InMemoryDataset
 from tqdm import tqdm
-from .utils import download_dataset
+from .utils import download_dataset_from_hub
 
 
 DEFAULT_NON_TARGET_NODE_TYPES = [
@@ -142,8 +142,7 @@ class IeeeCisDataset(InMemoryDataset):
             (default: :obj:`False`)
     
     """
-
-    url = "https://drive.google.com/file/d/1JBrvglTqeidTgl5ElaRjAgIPCc6udyyL/view?usp=drive_link"
+    
     exclude_cols = ["TransactionID", "isFraud", "TransactionDT"]
 
     def __init__(
@@ -153,6 +152,7 @@ class IeeeCisDataset(InMemoryDataset):
         target_cat_feat_cols: Optional[List[str]] = None,
         transform: Optional[Callable] = None,
         pre_transform: Optional[Callable] = None,
+        repo: str = "huggingface"
     ):
         if non_target_node_types is None:
             self.non_target_node_types = DEFAULT_NON_TARGET_NODE_TYPES
@@ -179,7 +179,7 @@ class IeeeCisDataset(InMemoryDataset):
 
     def download(self):
         if not all([osp.exists(f) for f in self.raw_paths]):
-            download_dataset(self.url, self.root)
+            download_dataset_from_hub("junhongmit/H2GB", "IEEE-CIS.zip", self.root)
 
     def process(self):
         train_transaction_df = pd.read_csv(self.raw_paths[0])

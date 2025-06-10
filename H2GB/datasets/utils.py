@@ -5,7 +5,7 @@ import torch
 import numpy as np
 from torch_sparse import SparseTensor
 
-def download_dataset(url, output_directory):
+def download_dataset_from_drive(url, output_directory):
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
     
@@ -31,6 +31,22 @@ def download_dataset(url, output_directory):
         with zipfile.ZipFile(output_path, 'r') as zip_ref:
             zip_ref.extractall(output_directory)
         os.remove(output_path)  # Remove the zip file after extraction
+
+
+def download_dataset_from_hub(repo, file, output_directory):
+    from huggingface_hub import hf_hub_download
+    if output_directory and not os.path.exists(output_directory):
+        os.makedirs(output_directory)
+    
+    output_path = hf_hub_download(repo_id=repo, filename=file, repo_type="dataset")
+    
+    # Unzip the dataset if necessary
+    if output_path.endswith('.zip'):
+        import zipfile
+        with zipfile.ZipFile(output_path, 'r') as zip_ref:
+            zip_ref.extractall(output_directory)
+    else:
+        return output_path
     
 
 def even_quantile_labels(vals, nclasses, verbose=True):

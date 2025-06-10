@@ -1,11 +1,11 @@
-out_dir: /nobackup/users/junhong/Logs/results/oag-chem
+out_dir: ./results/oag-chem
 metric_best: accuracy
 seed: 42
 wandb:
   use: True
-  project: unifiedGT
+  project: h2gb
 dataset:
-  dir: /nobackup/users/junhong/Data
+  dir: ./data
   format: PyG-OAG
   name: chemistry
   task: hetero_node

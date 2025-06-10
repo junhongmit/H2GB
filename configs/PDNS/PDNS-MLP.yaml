@@ -1,11 +1,11 @@
-out_dir: /nobackup/users/junhong/Logs/results/PDNS
+out_dir: ./results/PDNS
 metric_best: f1
 seed: 42
 wandb:
   use: True
-  project: unifiedGT
+  project: h2gb
 dataset:
-  dir: /nobackup/users/junhong/Data
+  dir: ./data_test
   format: PyG-PDNS
   name: PDNS
   task: hetero_node

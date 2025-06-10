@@ -1,12 +1,12 @@
-out_dir: /nobackup/users/junhong/Logs/results/RCDD
+out_dir: ./results/RCDD
 metric_best: f1
 seed: 42
 device: cpu
 wandb:
   use: True
-  project: unifiedGT
+  project: h2gb
 dataset:
-  dir: /nobackup/users/junhong/Data
+  dir: ./data
   format: PyG-RCDD
   name: RCDD
   task: hetero_node

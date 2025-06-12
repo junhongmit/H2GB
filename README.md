@@ -1,19 +1,21 @@
-<p align="center">
+<div align="center">
   <img src="https://raw.githubusercontent.com/junhongmit/H2GB/main/imgs/logo_bg.png" width="30%" height="auto"/>
-</p>
-
-<p align="center">
-	<a href="https://arxiv.org/pdf/2407.10916"><img src="https://img.shields.io/badge/arXiv-2407.10916-yellowgreen"></a>
-	<a href="https://pypi.org/project/H2GB/"><img src="https://img.shields.io/pypi/v/H2GB.svg?color=brightgreen"></a>
-	<a href="https://github.com/junhongmit/H2GB/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
-	<a href="https://junhongmit.github.io/H2GB/"><img src="https://img.shields.io/badge/ReadTheDocs-orange"></a>
-</p>
+</div>
 
 <div align="center">
-  <h1><a href="https://arxiv.org/abs/2407.10916" style="color: black !important;">When Heterophily Meets Heterogeneity:<br>Challenges and a New Large-Scale Graph Benchmark</a></h1>
-  <strong>Junhong Lin¹</strong>, <strong>Xiaojie Guo²</strong>, <strong>Shuaicheng Zhang³</strong>, <strong>Yada Zhu²</strong>, <strong>Dawei Zhou³</strong>, <strong>Julian Shun¹</strong><br>
+
+# [When Heterophily Meets Heterogeneity:<br>Challenges and a New Large-Scale Graph Benchmark](https://arxiv.org/abs/2407.10916)
+[![preprint](https://img.shields.io/static/v1?label=arXiv&message=2407.10916&color=B31B1B&logo=arXiv)](https://arxiv.org/pdf/2407.10916)
+[![huggingface](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Datasets-FFD21E)](https://huggingface.co/datasets/junhongmit/H2GB)
+[![PyPI](https://img.shields.io/static/v1?label=PyPI&message=H2GB&color=brightgreen&logo=pypi)](https://pypi.org/project/H2GB/)
+[![ReadTheDocs](https://img.shields.io/static/v1?label=latest&message=ReadTheDocs&color=orange&logo=readthedocs)](https://junhongmit.github.io/H2GB/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/junhongmit/H2GB/blob/main/LICENSE)
+
+<strong>Junhong Lin¹</strong>, <strong>Xiaojie Guo²</strong>, <strong>Shuaicheng Zhang³</strong>, <strong>Yada Zhu²</strong>, <strong>Dawei Zhou³</strong>, <strong>Julian Shun¹</strong><br>
   ¹ MIT CSAIL, ² IBM Research, ³ Virginia Tech
+
 </div>
+
 
 --------------------------------------------------------------------------------
 
@@ -79,6 +81,18 @@ chmox +x ./run/calcHomo.sh
 ./run/calcHomo.sh
 ```
 
-## Side Notes
+## Additional Notes
 ### Encoders
 The Hetero_Raw encoder are supposed to be used for heterogeneous GNN or graph dataset that has  different node encoding dimensions for different node type. Therefore, each node type can be transformed separately. To reproduce results of homogeneous GNN, consider using the Raw encoder, which apply the same transformation for each node type. Otherwise, using Hetero_Raw for homogeneous GNN will misleadingly increase the task performance.
+
+## 📚 Citation
+If you use this dataset, please consider citing the following paper (currently on arXiv, will be in KDD procedding soon):
+
+```
+@article{lin2024heterophily,
+  title={When Heterophily Meets Heterogeneity: New Graph Benchmarks and Effective Methods},
+  author={Lin, Junhong and Guo, Xiaojie and Zhang, Shuaicheng and Zhou, Dawei and Zhu, Yada and Shun, Julian},
+  journal={arXiv preprint arXiv:2407.10916},
+  year={2024}
+}
+```

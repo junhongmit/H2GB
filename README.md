@@ -26,7 +26,7 @@ The Heterophilic and Heterogeneous Graph Benchmark (ℋ²GB) is a collection of 
 The ℋ²GB encompasses 9 diverse real-world datasets across 5 domains. Its data loaders are fully compatible with popular graph deep learning framework [PyTorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/). They provide automatic dataset downloading, standardized dataset splits, and unified performance evaluation.
 
 <p align='center'>
-  <img src="https://raw.githubusercontent.com/junhongmit/H2GB/main/imgs/flowchart_v4.png" width="80%" height="auto"/>
+  <img src="https://raw.githubusercontent.com/junhongmit/H2GB/main/imgs/flowchart_v3_color.png" width="80%" height="auto"/>
 </p>
 
 
